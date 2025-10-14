@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="|Bienvenido a ${appName}!|">Bienvenido a MediGO!</title>
+    </head>
+<body style="margin:0;padding:16px;background-color:#f3f4f6;font-family:Arial, Helvetica, sans-serif;">
+
+    <div style="max-width:600px;margin:20px auto;padding:0 10px;">
+        <div style="background-color:#ffffff;padding:24px;border-radius:12px;border:1px solid #e5e7eb;box-shadow:0 10px 25px rgba(0,0,0,0.08);">
+
+            <header style="text-align:center;margin-bottom:24px;">
+                <h1 style="margin:0;font-size:28px;line-height:1.25;color:#4338CA;" th:text="${appName}">MediGO</h1>
+                <p style="margin-top:8px;color:#6b7280;font-size:14px;">
+                    ¡Estamos encantados de tenerte a bordo de la plataforma!
+                </p>
+            </header>
+
+            <div style="text-align:center;margin-bottom:24px;">
+                <img src="https://cdn.prod.website-files.com/611ed5a217b32b056e5477ec/66e9af5ba9335580eb6202ae_644988ded773ee3739f6691a_Online%20Medical%20Checkup%20(1)%20(1).gif"
+                     alt="Icono de Bienvenida y Salud"
+                     style="display:block;width:120px;height:120px;margin:0 auto;border-radius:10px;box-shadow:0 4px 12px rgba(0,0,0,0.08);">
+            </div>
+
+            <main>
+                <p style="margin:0 0 12px;color:#374151;font-size:16px;">
+                    Hola <strong style="color:#4338CA;" th:text="${userName}">[Nombre del Usuario]</strong>,
+                </p>
+
+                <p style="margin:0 0 12px;color:#4b5563;font-size:15px;">
+                    Tu registro en <strong th:text="${appName}">MediGO</strong> ha sido un éxito.
+                </p>
+
+                <p style="margin:0 0 12px;color:#4b5563;font-size:15px;">
+                    Ahora puedes comenzar a <strong>gestionar tus citas médicas</strong>, encontrar especialistas y llevar el control de tu salud de manera sencilla. Nuestra plataforma está diseñada para facilitar tu acceso a la atención médica.
+                </p>
+
+                <p style="margin:0 0 16px;color:#4b5563;font-size:15px;">
+                    Estamos aquí para asegurar tu bienestar. Si tienes alguna pregunta sobre cómo agendar tu primera cita, no dudes en contactar a nuestro equipo de soporte.
+                </p>
+
+                <div style="text-align:center;padding-top:8px;">
+                    <a th:href="${loginUrl}"
+                       style="text-decoration:none;display:inline-block;background-color:#4c51bf;color:#ffffff;font-weight:bold;padding:12px 24px;border-radius:10px;box-shadow:0 6px 12px rgba(76,81,191,0.3);">
+                        ¡Agenda tu Primera Cita!
+                    </a>
+                </div>
+            </main>
+
+            <footer style="margin-top:24px;padding-top:16px;border-top:1px solid #e5e7eb;text-align:center;">
+                <p style="margin:0;color:#9ca3af;font-size:12px;">
+                    Estás recibiendo este correo porque te registraste en <span th:text="${appName}">MediGO</span>.
+                </p>
+                <p style="margin-top:8px;font-size:11px;">
+                    <a href="#" style="color:#818cf8;text-decoration:none;">Administrar preferencias de correo</a>
+                </p>
+            </footer>
+
+        </div>
+
+        <div style="text-align:center;margin-top:8px;color:#6b7280;font-size:12px;">
+            <p style="margin:0;">
+                &copy; <span th:text="${#dates.year(#dates.createNow())}">2025</span> <span th:text="${appName}">MediGO</span>. Todos los derechos reservados.
+            </p>
+        </div>
+
+    </div>
+
+</body>
+</html>
