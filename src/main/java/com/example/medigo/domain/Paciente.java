@@ -26,11 +26,14 @@ public class Paciente extends Usuario {
                     String email,
                     String password,
                     Integer edad,
+                    String telefono,
+                    String rutaFoto,
                     Rol rol,
+                    EstadoCuenta estadoCuenta,
                     ZonedDateTime createdAt,
                     String dni,
                     LocalDate fechaNacimiento) {
-        super(id, nombres, apellidos, email, password, edad, rol, createdAt);
+        super(id, nombres, apellidos, email, password, edad, telefono, rutaFoto, rol, estadoCuenta, createdAt);
         this.dni = dni;
         this.fechaNacimiento = fechaNacimiento;
     }

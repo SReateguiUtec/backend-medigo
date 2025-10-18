@@ -34,8 +34,18 @@ public class Usuario implements UserDetails {
     @Check(constraints = "edad >= 18 AND edad <= 90")
     private Integer edad;
 
+    @Column(unique = true, length = 9)
+    @Check(constraints = "LENGTH(telefono) = 9 AND telefono ~ '^[0-9]+$'")
+    private String telefono;
+
+    private String rutaFoto;
+
     @Enumerated(EnumType.STRING)
     private Rol rol;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "account_status")
+    private EstadoCuenta estadoCuenta = EstadoCuenta.ACTIVADA;
 
     @Column(nullable = false, updatable = false) // hora de creacion unica, no se puede cambiar
     private ZonedDateTime createdAt;
@@ -72,6 +82,6 @@ public class Usuario implements UserDetails {
     }
     @Override
     public boolean isEnabled() {
-        return true;
+        return estadoCuenta == EstadoCuenta.ACTIVADA;
     }
 }
