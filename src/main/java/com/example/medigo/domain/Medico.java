@@ -3,6 +3,7 @@ package com.example.medigo.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.Set;
@@ -20,6 +21,9 @@ public class Medico extends Usuario {
     private String numeroColegiado;
 
     private String bio;
+
+    @Column(name = "precio_consulta", precision = 10, scale = 2)
+    private BigDecimal precioConsulta;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(

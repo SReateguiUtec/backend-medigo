@@ -3,6 +3,7 @@ package com.example.medigo.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
 @Entity
@@ -31,8 +32,14 @@ public class Cita {
     @Enumerated(EnumType.STRING)
     private EstadoCita estado;
 
-    @Column(name = "enlace_videollamada")
-    private String enlaceVideollamada;
+    @Column(name = "precio_consulta", precision = 10, scale = 2)
+    private BigDecimal precioConsulta;
+
+    @Column(name = "es_pagada")
+    private Boolean esPagada = false;
+
+    @Column(name = "stripe_session_id")
+    private String stripeSessionId;
 
     @Column(nullable = false, updatable = false)
     private ZonedDateTime createdAt;
@@ -40,5 +47,8 @@ public class Cita {
     @PrePersist
     protected void onCreate() {
         createdAt = ZonedDateTime.now();
+        if (esPagada == null) {
+            esPagada = false;
+        }
     }
 }
