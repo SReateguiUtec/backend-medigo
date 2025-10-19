@@ -43,7 +43,6 @@ public class PaymentController {
 
     @PostMapping("/checkout/verify/{sessionId}")
     public ResponseEntity<String> verifyAndProcessPayment(@PathVariable String sessionId) {
-        log.info("Verificando y procesando pago para sesión: {}", sessionId);
         stripePaymentService.processSuccessfulPayment(sessionId);
         return ResponseEntity.ok("Pago procesado exitosamente");
     }

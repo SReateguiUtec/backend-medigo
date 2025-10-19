@@ -1,9 +1,11 @@
-package com.example.medigo.events;
+package com.example.medigo.events.EventListener;
 
 import com.example.medigo.domain.Cita;
 import com.example.medigo.domain.Medico;
 import com.example.medigo.domain.Paciente;
 import com.example.medigo.email.EmailService;
+import com.example.medigo.events.CitaCreadaEvent;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;

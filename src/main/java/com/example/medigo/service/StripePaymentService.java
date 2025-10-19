@@ -43,25 +43,17 @@ public class StripePaymentService {
         try {
             Stripe.apiKey = stripeSecretKey;
 
-            // Obtener la cita
             Cita cita = citaService.findCitaById(request.getCitaId());
 
-            // Verificar que la cita pertenece al paciente
             if (!cita.getPaciente().getId().equals(pacienteId)) {
                 throw new IllegalArgumentException("Esta cita no pertenece al paciente actual");
             }
-
-            // Verificar que la cita está pendiente
             if (cita.getEstado() != EstadoCita.PENDIENTE) {
                 throw new IllegalArgumentException("Esta cita ya fue procesada");
             }
-
-            // Verificar que no esté ya pagada
             if (Boolean.TRUE.equals(cita.getEsPagada())) {
                 throw new IllegalArgumentException("Esta cita ya fue pagada");
             }
-
-            // Obtener el precio de consulta del médico
             BigDecimal precioConsulta = cita.getMedico().getPrecioConsulta();
             if (precioConsulta == null || precioConsulta.compareTo(BigDecimal.ZERO) <= 0) {
                 throw new IllegalArgumentException("El médico no tiene un precio de consulta configurado");
@@ -79,7 +71,6 @@ public class StripePaymentService {
             String successUrl = request.getOriginUrl() + "/payment/success?session_id={CHECKOUT_SESSION_ID}";
             String cancelUrl = request.getOriginUrl() + "/payment/cancel";
 
-            // Preparar metadata
             Map<String, String> metadata = new HashMap<>();
             metadata.put("cita_id", String.valueOf(cita.getId()));
             metadata.put("paciente_id", String.valueOf(pacienteId));
