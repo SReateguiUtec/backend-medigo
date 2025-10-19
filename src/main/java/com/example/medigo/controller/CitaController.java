@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,5 +41,14 @@ public class CitaController {
             @AuthenticationPrincipal Usuario usuario) {
         Cita citaCancelada = citaService.cancelCita(citaId, usuario);
         return ResponseEntity.ok(citaCancelada);
+    }
+
+    @GetMapping("/{citaId}")
+    @PreAuthorize("hasAnyRole('PACIENTE', 'MEDICO')")
+    public ResponseEntity<Cita> getCitaDetails(
+            @PathVariable Long citaId,
+            @AuthenticationPrincipal Usuario usuario) {
+        Cita cita = citaService.getCitaDetails(citaId, usuario);
+        return ResponseEntity.ok(cita);
     }
 }

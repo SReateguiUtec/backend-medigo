@@ -6,8 +6,10 @@ import com.example.medigo.exceptions.ResourceNotFoundException;
 import com.example.medigo.repository.CitaRepository;
 import com.example.medigo.repository.MedicoRepository;
 import com.example.medigo.repository.PacienteRepository;
+import com.example.medigo.events.CitaCreadaEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,7 @@ public class CitaService {
     private final CitaRepository citaRepository;
     private final PacienteRepository pacienteRepository;
     private final MedicoRepository medicoRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional(readOnly = true)
     public Cita findCitaById(Long citaId) {
@@ -56,8 +59,11 @@ public class CitaService {
                 .precioConsulta(medico.getPrecioConsulta()) // Se copia el precio actual del médico
                 .build();
 
-        log.info("Creando nueva cita para paciente {} con médico {}", paciente.getId(), medico.getId());
-        return citaRepository.save(nuevaCita);
+        Cita savedCita = citaRepository.save(nuevaCita);
+        log.info("Nueva cita creada con ID: {} para paciente {} con médico {}", savedCita.getId(), paciente.getId(), medico.getId());
+        
+        eventPublisher.publishEvent(new CitaCreadaEvent(this, savedCita));
+        return savedCita;
     }
 
     @Transactional
@@ -77,12 +83,27 @@ public class CitaService {
         }
 
         if (Boolean.TRUE.equals(cita.getEsPagada())) {
-            // TODO: Implementar lógica de reembolso con Stripe antes de cancelar.
-            throw new IllegalStateException("No se puede cancelar una cita que ya ha sido pagada. Contacte a soporte para un reembolso.");
+            // TODO: Implementar logica de reembolso con Stripe antes de cancelar
+            throw new IllegalStateException("No se puede cancelar una cita que ya ha sido confirmada del pago. Contacte a soporte para un reembolso.");
         }
 
         cita.setEstado(EstadoCita.CANCELADA);
         return citaRepository.save(cita);
+    }
+
+    @Transactional(readOnly = true)
+    public Cita getCitaDetails(Long citaId, Usuario usuario) {
+
+        Cita cita = findCitaById(citaId);
+
+        boolean isPacienteInCita = usuario.getRol() == Rol.PACIENTE && cita.getPaciente().getId().equals(usuario.getId());
+        boolean isMedicoInCita = usuario.getRol() == Rol.MEDICO && cita.getMedico().getId().equals(usuario.getId());
+
+        if (!isPacienteInCita && !isMedicoInCita) {
+            throw new AccessDeniedException("No tiene permiso para ver los detalles de esta cita.");
+        }
+
+        return cita;
     }
 
     @Transactional(readOnly = true)
