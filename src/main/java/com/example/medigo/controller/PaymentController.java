@@ -36,14 +36,7 @@ public class PaymentController {
 
     @GetMapping("/checkout/status/{sessionId}")
     public ResponseEntity<PaymentStatusResponse> getCheckoutStatus(@PathVariable String sessionId) {
-        log.info("Consultando estado de sesión: {}", sessionId);
         PaymentStatusResponse response = stripePaymentService.getPaymentStatus(sessionId);
         return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/checkout/verify/{sessionId}")
-    public ResponseEntity<String> verifyAndProcessPayment(@PathVariable String sessionId) {
-        stripePaymentService.processSuccessfulPayment(sessionId);
-        return ResponseEntity.ok("Pago procesado exitosamente");
     }
 }

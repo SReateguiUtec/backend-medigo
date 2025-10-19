@@ -205,7 +205,6 @@ public class StripePaymentService {
                 Cita cita = transaction.getCita();
                 cita.setEsPagada(true);
                 cita.setEstado(EstadoCita.CONFIRMADA);
-                cita.setPrecioConsulta(transaction.getAmountTotal());
                 citaService.saveCita(cita);
 
                 log.info("Pago procesado exitosamente para cita: {}", cita.getId());
