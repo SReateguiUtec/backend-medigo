@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="src/main/resources/static/logo.png" alt="MediGO Logo" width="300" height="300">
+  <img src="src/main/resources/static/logo.png" alt="MediGO Logo" width="1200" height="500">
 </div>
 
 <br><br>
