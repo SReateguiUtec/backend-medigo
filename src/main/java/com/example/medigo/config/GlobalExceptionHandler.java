@@ -48,7 +48,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleJsonParseError(HttpMessageNotReadableException ex) {
         return buildErrorResponse(HttpStatus.BAD_REQUEST, "Datos inválidos", "El formato de los datos enviados no es válido");
     }
-
+    
     // Map<String, Object> basicamente esta dandonos un template de como sera la respuesta del exception. Similar a un formato JSON
     private ResponseEntity<Map<String, Object>> buildErrorResponse(HttpStatus status, String error, String message) {
         Map<String, Object> response = new HashMap<>();
