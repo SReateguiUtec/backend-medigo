@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="src/main/resources/static/logo.png" alt="MediGO Logo" width="600" height="500">
+  <img src="src/main/resources/static/medigo-logo-1.gif" alt="MediGO Logo" width="600" height="500">
 </div>
 
 <br><br>
@@ -16,6 +16,37 @@
 - [Instalación y Configuración](#-instalación-y-configuración)
 - [Estructura del Proyecto](#-estructura-del-proyecto)
 - [Equipo de Desarrollo](#-equipo-de-desarrollo)
+
+## 💡 Introducción
+
+MediGO es una solución de telemedicina diseñada para modernizar y optimizar el acceso a la atención médica especializada a través de medios digitales.
+
+### Contexto
+En el contexto actual, la demanda de **acceso rápido y flexible** a la atención médica especializada es alta, mientras que las barreras geográficas y de tiempo siguen limitando la disponibilidad de consultas presenciales. La necesidad de herramientas digitales que permitan la **interacción segura y eficiente** entre médicos y pacientes, junto con la gestión integral de todo el proceso (citas, historial, pagos), se ha convertido en una prioridad para el sector salud.
+
+### Objetivos del Proyecto
+Los objetivos principales de MediGO son:
+1.  **Eliminar las barreras geográficas** y de tiempo para el acceso a médicos especialistas.
+2.  Proveer una **plataforma segura y confiable** para la realización de consultas médicas virtuales.
+3.  Digitalizar y centralizar la **gestión de citas, historiales médicos y transacciones** de pago.
+4.  Garantizar la **seguridad y privacidad** de la información del paciente y las comunicaciones.
+
+
+## 🔍 Identificación del Problema o Necesidad
+
+### Descripción del Problema
+El principal problema que MediGO aborda es la **inaccesibilidad y la ineficiencia** del modelo tradicional de atención médica. Los pacientes a menudo enfrentan largas esperas, dificultades de traslado, y limitaciones geográficas para acceder a especialistas. Además, los médicos carecen de herramientas centralizadas y seguras para la gestión de sus agendas, historiales clínicos digitales y cobros de servicios, lo que fragmenta la atención y reduce la eficiencia operativa.
+
+### Justificación
+La solución a este problema es relevante porque:
+* **Mejora la calidad de vida** del paciente al ofrecer comodidad, rapidez y un acceso más equitativo a la salud.
+* **Optimiza el tiempo y recursos** tanto para pacientes como para profesionales médicos.
+* Permite a los centros de salud y a los médicos **expandir su alcance** sin necesidad de incrementar su infraestructura física, adoptando un modelo de negocio digital más eficiente.
+
+
+## 💻 Nuestra solución
+
+MediGO es la solución integral que digitaliza el proceso de consulta médica especializada de principio a fin, proporcionando un ecosistema completo para la telemedicina.
 
 ## 🚀 Características Principales
 
