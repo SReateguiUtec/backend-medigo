@@ -1,12 +1,12 @@
-<div align="center">
-  <img src="src/main/resources/static/medigo-logo-1.gif" alt="MediGO Logo" width="600" height="500">
-</div>
-
-<br><br>
-
 # MediGO
 
 **MediGO** es una plataforma de telemedicina desarrollada con Spring Boot que conecta pacientes con médicos especialistas para consultas médicas virtuales. La aplicación incluye funcionalidades de videollamadas, gestión de citas, historiales médicos, pagos integrados y administración de usuarios.
+
+Proyecto desarrollado para el curso **CS 2031 Desarrollo Basado en Plataformas de la Universidad de Ingenieria y Tecnologia - UTEC**.
+
+<div align="center">
+  <img src="src/main/resources/static/medigo-logo-1.gif" alt="MediGO Logo" width="400" height="350">
+</div>
 
 ## 📋 Tabla de Contenidos
 
@@ -222,8 +222,10 @@ src/
 
 | Nombre | Código |
 |--------|--------|
-|   Sebastian Reategui Bellido     |   202410048     |
+|   Sebastian Hernan Reategui Bellido     |   202410048     |
 |   Juan Diego Mejia Armas     |    202410271    |
+|   Samir Antony Mena Ramirez   | 202310289       |
+|   Gabriel Raymi Vaccsro Ortiz   | 202210358      |
 
 
 ## 📄 Licencia
