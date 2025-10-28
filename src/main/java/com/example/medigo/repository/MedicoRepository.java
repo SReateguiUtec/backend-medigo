@@ -29,6 +29,4 @@ public interface MedicoRepository extends JpaRepository<Medico, Long> {
     // Filtrar por rango de precios
     Page<Medico> findByPrecioConsultaBetween(BigDecimal minPrecio, BigDecimal maxPrecio, Pageable pageable);
 
-    @Query("SELECT m.email FROM Medico m WHERE m.email IS NOT NULL")
-    List<String> findAllEmails(); //Buscar los correos de todos los medicos
 }
