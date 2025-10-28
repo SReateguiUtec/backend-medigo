@@ -4,9 +4,11 @@ import com.example.medigo.domain.Medico;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -26,4 +28,7 @@ public interface MedicoRepository extends JpaRepository<Medico, Long> {
     
     // Filtrar por rango de precios
     Page<Medico> findByPrecioConsultaBetween(BigDecimal minPrecio, BigDecimal maxPrecio, Pageable pageable);
+
+    @Query("SELECT m.email FROM Medico m WHERE m.email IS NOT NULL")
+    List<String> findAllEmails(); //Buscar los correos de todos los medicos
 }
