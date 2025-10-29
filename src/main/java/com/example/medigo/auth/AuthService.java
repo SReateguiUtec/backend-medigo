@@ -1,5 +1,6 @@
 package com.example.medigo.auth;
 
+import com.example.medigo.domain.EstadoCuenta;
 import com.example.medigo.domain.Medico;
 import com.example.medigo.domain.Paciente;
 import com.example.medigo.domain.Rol;
@@ -49,6 +50,7 @@ public class AuthService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .rol(Rol.PACIENTE)
+                .estadoCuenta(EstadoCuenta.ACTIVADA)
                 .build();
         pacienteRepository.save(paciente);
         eventPublisher.publishEvent(new SignUpEvent(this, paciente));
@@ -70,6 +72,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.getPassword()))
                 .dni("")
                 .rol(Rol.MEDICO)
+                .estadoCuenta(EstadoCuenta.ACTIVADA)
                 .build();
         medicoRepository.save(medico);
         eventPublisher.publishEvent(new SignUpEvent(this, medico));
@@ -88,7 +91,7 @@ public class AuthService {
                 )
         );
         UserDetails userDetails = (UserDetails) auth.getPrincipal();
-        String token = jwtService.generateToken(userDetails);
+        var token = jwtService.generateToken(userDetails);
         return new TokenResponse(token);
     }
 }
