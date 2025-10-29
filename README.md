@@ -225,7 +225,7 @@ src/
 |   Sebastian Hernan Reategui Bellido     |   202410048     |
 |   Juan Diego Mejia Armas     |    202410271    |
 |   Samir Antony Mena Ramirez   | 202310289       |
-|   Gabriel Raymi Vaccsro Ortiz   | 202210358      |
+|   Gabriel Raymi Vaccaro Ortiz   | 202210358      |
 
 
 ## 📄 Licencia

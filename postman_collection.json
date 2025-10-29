@@ -1,0 +1,660 @@
+{
+	"info": {
+		"_postman_id": "medigo-api-collection-with-flows",
+		"name": "MediGO API with Automated Flows",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"description": "API documentation for MediGO - A telemedicine platform connecting patients with medical specialists via virtual consultations. This collection includes automated authentication flows."
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "patient_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "doctor_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "admin_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "patient_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "doctor_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "appointment_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "cita_id",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "01 - Authentication Flow",
+			"item": [
+				{
+					"name": "01 - Patient Signup",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Patient signup successful\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombres\": \"Juan\",\n  \"apellidos\": \"Perez\",\n  \"email\": \"juan.perez@example.com\",\n  \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/signup/paciente",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup",
+								"paciente"
+							]
+						},
+						"description": "Register a new patient account"
+					},
+					"response": []
+				},
+				{
+					"name": "02 - Doctor Signup",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Doctor signup successful\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombres\": \"Maria\",\n  \"apellidos\": \"Gonzalez\",\n  \"email\": \"maria.gonzalez@example.com\",\n  \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/signup/medico",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signup",
+								"medico"
+							]
+						},
+						"description": "Register a new doctor account"
+					},
+					"response": []
+				},
+				{
+					"name": "03 - Patient Sign In",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Patient signin successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    ",
+									"    // Extract token from response and set as variable",
+									"    const response = pm.response.json();",
+									"    const token = response.message; // Assuming token is in message field",
+									"    pm.environment.set(\"patient_token\", token);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"juan.perez@example.com\",\n  \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/signin",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signin"
+							]
+						},
+						"description": "Authenticate patient and get JWT token"
+					},
+					"response": []
+				},
+				{
+					"name": "04 - Doctor Sign In",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Doctor signin successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    ",
+									"    // Extract token from response and set as variable",
+									"    const response = pm.response.json();",
+									"    const token = response.message; // Assuming token is in message field",
+									"    pm.environment.set(\"doctor_token\", token);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"maria.gonzalez@example.com\",\n  \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/signin",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"signin"
+							]
+						},
+						"description": "Authenticate doctor and get JWT token"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication flow to register and sign in users with automatic token handling"
+		},
+		{
+			"name": "02 - Profile Management",
+			"item": [
+				{
+					"name": "01 - Get Patient Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{patient_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/profile/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"profile",
+								"me"
+							]
+						},
+						"description": "Get the authenticated patient's profile information"
+					},
+					"response": []
+				},
+				{
+					"name": "02 - Update Patient Profile",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{patient_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombres\": \"Juan Carlos\",\n  \"apellidos\": \"Perez Lopez\",\n  \"telefono\": \"987654321\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/profile/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"profile",
+								"me"
+							]
+						},
+						"description": "Update the authenticated patient's profile information"
+					},
+					"response": []
+				},
+				{
+					"name": "03 - Get Doctor Profile",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{doctor_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/profile/me",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"profile",
+								"me"
+							]
+						},
+						"description": "Get the authenticated doctor's profile information"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for managing user profiles with automatic authentication"
+		},
+		{
+			"name": "03 - Appointment Management Flow",
+			"item": [
+				{
+					"name": "01 - Create Appointment",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Appointment created successfully\", function () {",
+									"    pm.response.to.have.status(201);",
+									"    ",
+									"    // Extract appointment ID from response and set as variable",
+									"    const response = pm.response.json();",
+									"    pm.environment.set(\"appointment_id\", response.id);",
+									"    pm.environment.set(\"cita_id\", response.id);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{patient_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"medicoId\": 2,\n  \"fechaHora\": \"2025-12-01T10:00:00Z\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/citas",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"citas"
+							]
+						},
+						"description": "Create a new appointment (Patient only)"
+					},
+					"response": []
+				},
+				{
+					"name": "02 - Get Appointment Details",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{patient_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/citas/{{cita_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"citas",
+								"{{cita_id}}"
+							]
+						},
+						"description": "Get details of the created appointment (Patient)"
+					},
+					"response": []
+				},
+				{
+					"name": "03 - Get Appointment Details as Doctor",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{doctor_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/citas/{{cita_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"citas",
+								"{{cita_id}}"
+							]
+						},
+						"description": "Get details of the created appointment (Doctor)"
+					},
+					"response": []
+				}
+			],
+			"description": "Complete appointment management flow with automatic ID handling"
+		},
+		{
+			"name": "04 - Payment Flow",
+			"item": [
+				{
+					"name": "01 - Create Checkout Session",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{patient_token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"citaId\": {{cita_id}},\n  \"originUrl\": \"http://localhost:3000/payment-success\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{base_url}}/api/payments/checkout/session",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"payments",
+								"checkout",
+								"session"
+							]
+						},
+						"description": "Create a Stripe checkout session for appointment payment"
+					},
+					"response": []
+				}
+			],
+			"description": "Payment flow for appointments"
+		},
+		{
+			"name": "05 - Video Consultation Flow",
+			"item": [
+				{
+					"name": "01 - Create Video Room",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{patient_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/video/rooms/cita/{{cita_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"video",
+								"rooms",
+								"cita",
+								"{{cita_id}}"
+							]
+						},
+						"description": "Create a video room for an appointment (Patient)"
+					},
+					"response": []
+				},
+				{
+					"name": "02 - Join Video Room as Patient",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{patient_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/video/join/cita/{{cita_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"video",
+								"join",
+								"cita",
+								"{{cita_id}}"
+							]
+						},
+						"description": "Get join information for a video room (Patient)"
+					},
+					"response": []
+				},
+				{
+					"name": "03 - Join Video Room as Doctor",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{doctor_token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/video/join/cita/{{cita_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"video",
+								"join",
+								"cita",
+								"{{cita_id}}"
+							]
+						},
+						"description": "Get join information for a video room (Doctor)"
+					},
+					"response": []
+				}
+			],
+			"description": "Video consultation flow with automatic authentication"
+		},
+		{
+			"name": "06 - Doctor Search",
+			"item": [
+				{
+					"name": "Get All Doctors",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/search/medicos?page=0&size=10&sortBy=nombres&sortDirection=asc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"medicos"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "nombres"
+								},
+								{
+									"key": "sortDirection",
+									"value": "asc"
+								}
+							]
+						},
+						"description": "Get a paginated list of all doctors"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Doctors by Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/search/medicos/search?q=maria&page=0&size=10&sortBy=nombres&sortDirection=asc",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"search",
+								"medicos",
+								"search"
+							],
+							"query": [
+								{
+									"key": "q",
+									"value": "maria"
+								},
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sortBy",
+									"value": "nombres"
+								},
+								{
+									"key": "sortDirection",
+									"value": "asc"
+								}
+							]
+						},
+						"description": "Search doctors by name or surname"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for searching and filtering doctors"
+		}
+	]
+}
