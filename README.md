@@ -227,5 +227,9 @@ src/
 |   Samir Antony Mena Ramirez   | 202310289       |
 |   Gabriel Raymi Vaccaro Ortiz   | 202210358      |
 
-<br><br>
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+
 **MediGO** - Conectando pacientes y médicos a través de la tecnología 🚀
