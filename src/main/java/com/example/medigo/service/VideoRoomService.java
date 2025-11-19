@@ -41,10 +41,6 @@ public class VideoRoomService {
     @Transactional
     public VideoRoom createVideoRoomForCita(Long citaId) {
 
-        Cita cita_revision = new Cita();
-        if ( cita_revision.getEstado() != EstadoCita.CONFIRMADA) {
-            throw new IllegalStateException("El pago hacia el doctor no ha sido confirmado");
-        }
         // Verificar si ya existe una sala para esta cita
         Optional<VideoRoom> existingRoom = videoRoomRepository.findByCitaId(citaId);
         if (existingRoom.isPresent()) {
@@ -59,8 +55,11 @@ public class VideoRoomService {
             return room;
         }
 
-        // Obtener la cita
+        // Obtener la cita, lanzar excepcion si la cita no fue pagada
         Cita cita = citaService.findCitaById(citaId);
+        if (cita.getEstado() != EstadoCita.CONFIRMADA) { 
+            throw new IllegalStateException("El pago hacia el doctor no ha sido confirmado");
+        }
         // Generar nombre único para la sala
         String roomName = "medigo-cita-" + citaId + "-" + System.currentTimeMillis();
         // Calcular tiempo de expiración (24 horas después de la cita)
@@ -71,7 +70,7 @@ public class VideoRoomService {
         Map<String, Object> roomRequest = new HashMap<>();
         Map<String, Object> properties = new HashMap<>();
         properties.put("exp", expirationEpoch);
-        properties.put("enable_recording", "cloud");
+        properties.put("enable_recording", false);
         properties.put("start_audio_off", true);
         properties.put("start_video_off", true);
         roomRequest.put("name", roomName);
