@@ -11,18 +11,20 @@ import com.example.medigo.domain.Usuario;
 import com.example.medigo.dto.response.MedicoResponseDto;
 import com.example.medigo.dto.response.PacienteResponseDto;
 import com.example.medigo.dto.response.UpdateEstadoCuentaDto;
-import com.example.medigo.dto.response.UpdateMedicoDto;
-import com.example.medigo.dto.response.UpdatePacienteDto;
 import com.example.medigo.exceptions.UserAlreadyExistsException;
 import com.example.medigo.exceptions.UserNotFoundException;
 import com.example.medigo.repository.UsuarioRepository;
 
 import lombok.RequiredArgsConstructor;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Map;
+
 @Service
 @RequiredArgsConstructor
 public class ProfileService {
-    
+
     private final UsuarioRepository usuarioRepository;
     private final ModelMapper modelMapper;
 
@@ -32,13 +34,13 @@ public class ProfileService {
     }
 
     @Transactional
-    public Object updateUserProfile(String email, Object updates) {
+    public Object updateUserProfile(String email, Map<String, Object> updates) {
         Usuario usuario = obtenerUsuarioPorEmail(email);
-        
+
         if (usuario.getRol() == Rol.PACIENTE) {
-            return updatePacienteProfile((Paciente) usuario, updates); // Se deriva al metodo donde se setea al paciente
+            return updatePacienteProfile((Paciente) usuario, updates);
         } else if (usuario.getRol() == Rol.MEDICO) {
-            return updateMedicoProfile((Medico) usuario, updates); // Se deriva al metodo donde se setea al medico
+            return updateMedicoProfile((Medico) usuario, updates);
         }
         throw new IllegalStateException("Rol de usuario no válido.");
     }
@@ -57,86 +59,102 @@ public class ProfileService {
         throw new IllegalStateException("Rol de usuario no válido.");
     }
 
-    private Object updatePacienteProfile(Paciente paciente, Object updates) {
+    private Object updatePacienteProfile(Paciente paciente, Map<String, Object> updates) {
 
-        if (updates instanceof UpdatePacienteDto) {
-            UpdatePacienteDto pacienteUpdates = (UpdatePacienteDto) updates;
-            
-            if (pacienteUpdates.getNombres() != null) {
-                paciente.setNombres(pacienteUpdates.getNombres());
-            }
-            if (pacienteUpdates.getApellidos() != null) {
-                paciente.setApellidos(pacienteUpdates.getApellidos());
-            }
-            if (pacienteUpdates.getEmail() != null) {
-                // Validar que no sea el mismmo email
-                if (!paciente.getEmail().equals(pacienteUpdates.getEmail()) && 
-                    usuarioRepository.existsByEmail(pacienteUpdates.getEmail())) {
-                    throw new UserAlreadyExistsException("Email ya está en uso.");
-                }
-                paciente.setEmail(pacienteUpdates.getEmail());
-            }
-            if (pacienteUpdates.getFechaNacimiento() != null) {
-                paciente.setFechaNacimiento(pacienteUpdates.getFechaNacimiento());
-            }
-            if (pacienteUpdates.getDni() != null) {
-                paciente.setDni(pacienteUpdates.getDni());
-            }
-            if (pacienteUpdates.getTelefono() != null) {
-                // Validar que no sea un telefono de otro usuario
-                if (!paciente.getTelefono().equals(pacienteUpdates.getTelefono()) && 
-                    usuarioRepository.findByTelefono(pacienteUpdates.getTelefono()).isPresent()) {
-                    throw new UserAlreadyExistsException("Teléfono ya está en uso.");
-                }
-                paciente.setTelefono(pacienteUpdates.getTelefono());
-            }
-            
-            usuarioRepository.save(paciente);
-            return modelMapper.map(paciente, PacienteResponseDto.class);
+        // Campos de Usuario (clase padre): nombres, apellidos, email, telefono, edad,
+        // rutaFoto
+        if (updates.containsKey("nombres")) {
+            paciente.setNombres((String) updates.get("nombres"));
         }
-        throw new IllegalArgumentException("Tipo de actualización no válido para paciente");
+        if (updates.containsKey("apellidos")) {
+            paciente.setApellidos((String) updates.get("apellidos"));
+        }
+        if (updates.containsKey("email")) {
+            String newEmail = (String) updates.get("email");
+            if (!paciente.getEmail().equals(newEmail) &&
+                    usuarioRepository.existsByEmail(newEmail)) {
+                throw new UserAlreadyExistsException("Email ya está en uso.");
+            }
+            paciente.setEmail(newEmail);
+        }
+        if (updates.containsKey("telefono")) {
+            String newTelefono = (String) updates.get("telefono");
+            if (!paciente.getTelefono().equals(newTelefono) &&
+                    usuarioRepository.findByTelefono(newTelefono).isPresent()) {
+                throw new UserAlreadyExistsException("Teléfono ya está en uso.");
+            }
+            paciente.setTelefono(newTelefono);
+        }
+
+        // Campos específicos de Paciente: dni, fechaNacimiento
+        if (updates.containsKey("dni")) {
+            paciente.setDni((String) updates.get("dni"));
+        }
+        if (updates.containsKey("fechaNacimiento")) {
+            String fechaStr = (String) updates.get("fechaNacimiento");
+            if (fechaStr != null && !fechaStr.isEmpty()) {
+                paciente.setFechaNacimiento(LocalDate.parse(fechaStr));
+            }
+        }
+
+        usuarioRepository.save(paciente);
+        return modelMapper.map(paciente, PacienteResponseDto.class);
     }
 
-    private Object updateMedicoProfile(Medico medico, Object updates) {
-        if (updates instanceof UpdateMedicoDto) {
-            UpdateMedicoDto medicoUpdates = (UpdateMedicoDto) updates;
-            
-            if (medicoUpdates.getNombres() != null) {
-                medico.setNombres(medicoUpdates.getNombres());
-            }
-            if (medicoUpdates.getApellidos() != null) {
-                medico.setApellidos(medicoUpdates.getApellidos());
-            }
-            if (medicoUpdates.getEmail() != null) {
-                // Validar que no sea el mismmo email
-                if (!medico.getEmail().equals(medicoUpdates.getEmail()) && 
-                    usuarioRepository.existsByEmail(medicoUpdates.getEmail())) {
-                    throw new UserAlreadyExistsException("Email ya está en uso.");
-                }
-                medico.setEmail(medicoUpdates.getEmail());
-            }
-            if (medicoUpdates.getDni() != null) {
-                medico.setDni(medicoUpdates.getDni());
-            }
-            if (medicoUpdates.getNumeroColegiado() != null) {
-                medico.setNumeroColegiado(medicoUpdates.getNumeroColegiado());
-            }
-            if (medicoUpdates.getBio() != null) {
-                medico.setBio(medicoUpdates.getBio());
-            }
-            if (medicoUpdates.getTelefono() != null) {
-                // Validar que no sea un telefono de otro usuario
-                if (!medico.getTelefono().equals(medicoUpdates.getTelefono()) && 
-                    usuarioRepository.findByTelefono(medicoUpdates.getTelefono()).isPresent()) {
-                    throw new UserAlreadyExistsException("Teléfono ya está en uso.");
-                }
-                medico.setTelefono(medicoUpdates.getTelefono());
-            }
-            
-            usuarioRepository.save(medico);
-            return modelMapper.map(medico, MedicoResponseDto.class);
+    private Object updateMedicoProfile(Medico medico, Map<String, Object> updates) {
+
+        // Campos de Usuario (clase padre): nombres, apellidos, email, telefono, edad,
+        // rutaFoto
+        if (updates.containsKey("nombres")) {
+            medico.setNombres((String) updates.get("nombres"));
         }
-        throw new IllegalArgumentException("Tipo de actualización no válido para médico");
+        if (updates.containsKey("apellidos")) {
+            medico.setApellidos((String) updates.get("apellidos"));
+        }
+        if (updates.containsKey("email")) {
+            String newEmail = (String) updates.get("email");
+            if (!medico.getEmail().equals(newEmail) &&
+                    usuarioRepository.existsByEmail(newEmail)) {
+                throw new UserAlreadyExistsException("Email ya está en uso.");
+            }
+            medico.setEmail(newEmail);
+        }
+        if (updates.containsKey("telefono")) {
+            String newTelefono = (String) updates.get("telefono");
+            if (!medico.getTelefono().equals(newTelefono) &&
+                    usuarioRepository.findByTelefono(newTelefono).isPresent()) {
+                throw new UserAlreadyExistsException("Teléfono ya está en uso.");
+            }
+            medico.setTelefono(newTelefono);
+        }
+
+        // Campos específicos de Medico: dni, numeroColegiado, bio, precioConsulta
+        if (updates.containsKey("dni")) {
+            medico.setDni((String) updates.get("dni"));
+        }
+        if (updates.containsKey("numeroColegiado")) {
+            medico.setNumeroColegiado((String) updates.get("numeroColegiado"));
+        }
+        if (updates.containsKey("bio")) {
+            medico.setBio((String) updates.get("bio"));
+        }
+        if (updates.containsKey("precioConsulta")) {
+            Object precioObj = updates.get("precioConsulta");
+            BigDecimal precio = null;
+            if (precioObj instanceof Double) {
+                precio = BigDecimal.valueOf((Double) precioObj);
+            } else if (precioObj instanceof String) {
+                precio = new BigDecimal((String) precioObj);
+            } else if (precioObj instanceof Integer) {
+                precio = BigDecimal.valueOf(((Integer) precioObj).doubleValue());
+            }
+            if (precio != null) {
+                medico.setPrecioConsulta(precio);
+            }
+        }
+
+        usuarioRepository.save(medico);
+        return modelMapper.map(medico, MedicoResponseDto.class);
     }
 
     @Transactional
@@ -144,7 +162,7 @@ public class ProfileService {
         Usuario usuario = obtenerUsuarioPorEmail(email);
         usuario.setEstadoCuenta(statusDto.getEstadoCuenta());
         usuarioRepository.save(usuario);
-        
+
         if (usuario.getRol() == Rol.PACIENTE) {
             return modelMapper.map(usuario, PacienteResponseDto.class);
         } else if (usuario.getRol() == Rol.MEDICO) {

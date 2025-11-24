@@ -16,6 +16,8 @@ import com.example.medigo.service.ProfileService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/profile")
 @RequiredArgsConstructor
@@ -31,16 +33,18 @@ public class ProfileController {
         Object profile = profileService.getUserProfile(email);
         return ResponseEntity.ok(profile);
     }
+    
     // Editar mi propio perfil
     @PatchMapping("/me")
     @PreAuthorize("hasRole('PACIENTE') or hasRole('MEDICO')")
     public ResponseEntity<Object> updateUserProfile(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestBody Object updates) {
+            @RequestBody Map<String, Object> updates) {  // ✅ Cambiado de Object a Map
         String email = userDetails.getUsername();
         Object updatedProfile = profileService.updateUserProfile(email, updates);
         return ResponseEntity.ok(updatedProfile);
     }
+    
     // Editar mi estado de cuenta
     @PatchMapping("/me/status")
     @PreAuthorize("hasRole('PACIENTE') or hasRole('MEDICO')")
