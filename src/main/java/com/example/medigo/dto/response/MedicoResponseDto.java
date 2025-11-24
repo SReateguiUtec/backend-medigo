@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.Set;
 
@@ -21,9 +22,11 @@ public class MedicoResponseDto {
     private String email;
     private Integer edad;
     private Rol rol;
+    private String telefono;
     private String dni;
     private String numeroColegiado;
     private String bio;
+    private BigDecimal precioConsulta;
     private Set<Especialidad> especialidades;
     private ZonedDateTime createdAt;
 }

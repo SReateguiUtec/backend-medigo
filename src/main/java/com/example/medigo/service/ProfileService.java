@@ -71,19 +71,32 @@ public class ProfileService {
         }
         if (updates.containsKey("email")) {
             String newEmail = (String) updates.get("email");
-            if (!paciente.getEmail().equals(newEmail) &&
-                    usuarioRepository.existsByEmail(newEmail)) {
+            if (newEmail != null && !newEmail.isEmpty() && 
+                !newEmail.equals(paciente.getEmail() != null ? paciente.getEmail() : "") &&
+                usuarioRepository.existsByEmail(newEmail)) {
                 throw new UserAlreadyExistsException("Email ya está en uso.");
             }
             paciente.setEmail(newEmail);
         }
         if (updates.containsKey("telefono")) {
             String newTelefono = (String) updates.get("telefono");
-            if (!paciente.getTelefono().equals(newTelefono) &&
-                    usuarioRepository.findByTelefono(newTelefono).isPresent()) {
+            if (newTelefono != null && !newTelefono.isEmpty() && 
+                !newTelefono.equals(paciente.getTelefono() != null ? paciente.getTelefono() : "") &&
+                usuarioRepository.findByTelefono(newTelefono).isPresent()) {
                 throw new UserAlreadyExistsException("Teléfono ya está en uso.");
             }
             paciente.setTelefono(newTelefono);
+        }
+        if (updates.containsKey("edad")) {
+            Object edadObj = updates.get("edad");
+            if (edadObj instanceof Integer) {
+                paciente.setEdad((Integer) edadObj);
+            } else if (edadObj instanceof String) {
+                try {
+                    paciente.setEdad(Integer.parseInt((String) edadObj));
+                } catch (NumberFormatException e) {
+                }
+            }
         }
 
         // Campos específicos de Paciente: dni, fechaNacimiento
@@ -113,19 +126,32 @@ public class ProfileService {
         }
         if (updates.containsKey("email")) {
             String newEmail = (String) updates.get("email");
-            if (!medico.getEmail().equals(newEmail) &&
-                    usuarioRepository.existsByEmail(newEmail)) {
+            if (newEmail != null && !newEmail.isEmpty() && 
+                !newEmail.equals(medico.getEmail() != null ? medico.getEmail() : "") &&
+                usuarioRepository.existsByEmail(newEmail)) {
                 throw new UserAlreadyExistsException("Email ya está en uso.");
             }
             medico.setEmail(newEmail);
         }
         if (updates.containsKey("telefono")) {
             String newTelefono = (String) updates.get("telefono");
-            if (!medico.getTelefono().equals(newTelefono) &&
-                    usuarioRepository.findByTelefono(newTelefono).isPresent()) {
+            if (newTelefono != null && !newTelefono.isEmpty() && 
+                !newTelefono.equals(medico.getTelefono() != null ? medico.getTelefono() : "") &&
+                usuarioRepository.findByTelefono(newTelefono).isPresent()) {
                 throw new UserAlreadyExistsException("Teléfono ya está en uso.");
             }
             medico.setTelefono(newTelefono);
+        }
+        if (updates.containsKey("edad")) {
+            Object edadObj = updates.get("edad");
+            if (edadObj instanceof Integer) {
+                medico.setEdad((Integer) edadObj);
+            } else if (edadObj instanceof String) {
+                try {
+                    medico.setEdad(Integer.parseInt((String) edadObj));
+                } catch (NumberFormatException e) {
+                }
+            }
         }
 
         // Campos específicos de Medico: dni, numeroColegiado, bio, precioConsulta
@@ -141,12 +167,22 @@ public class ProfileService {
         if (updates.containsKey("precioConsulta")) {
             Object precioObj = updates.get("precioConsulta");
             BigDecimal precio = null;
-            if (precioObj instanceof Double) {
-                precio = BigDecimal.valueOf((Double) precioObj);
-            } else if (precioObj instanceof String) {
-                precio = new BigDecimal((String) precioObj);
-            } else if (precioObj instanceof Integer) {
-                precio = BigDecimal.valueOf(((Integer) precioObj).doubleValue());
+            try {
+                if (precioObj instanceof Double) {
+                    precio = BigDecimal.valueOf((Double) precioObj);
+                } else if (precioObj instanceof String) {
+                    precio = new BigDecimal((String) precioObj);
+                } else if (precioObj instanceof Integer) {
+                    precio = BigDecimal.valueOf(((Integer) precioObj).doubleValue());
+                } else if (precioObj instanceof BigDecimal) {
+                    precio = (BigDecimal) precioObj;
+                } else if (precioObj != null) {
+                    // Try to parse as string representation
+                    precio = new BigDecimal(precioObj.toString());
+                }
+            } catch (NumberFormatException e) {
+                // If we can't parse the price, we'll leave it as null and not update
+                // This prevents errors when invalid data is sent
             }
             if (precio != null) {
                 medico.setPrecioConsulta(precio);

@@ -22,6 +22,7 @@ public class PacienteResponseDto {
     private Integer edad;
     private Rol rol;
     private String dni;
+    private String telefono;
     private LocalDate fechaNacimiento;
     private ZonedDateTime createdAt;
 }
