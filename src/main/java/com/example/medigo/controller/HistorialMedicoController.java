@@ -38,6 +38,12 @@ public class HistorialMedicoController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/paciente/{pacienteId}")
+    @PreAuthorize("hasRole('MEDICO')")
+    public ResponseEntity<List<HistorialMedico>> getHistorialPaciente(@PathVariable Long pacienteId) {
+        return ResponseEntity.ok(historialMedicoService.getByPacienteId(pacienteId));
+    }
+
     @PostMapping("/cita/{citaId}")
     @PreAuthorize("hasRole('MEDICO')")
     public ResponseEntity<HistorialMedico> create(

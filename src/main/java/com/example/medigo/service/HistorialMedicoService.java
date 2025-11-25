@@ -29,6 +29,10 @@ public class HistorialMedicoService {
         return historialMedicoRepository.findByCitaId(citaId);
     }
 
+    public List<HistorialMedico> getByPacienteId(Long pacienteId) {
+        return historialMedicoRepository.findByCitaPacienteIdOrderByCreatedAtDesc(pacienteId);
+    }
+
     public HistorialMedico create(Long citaId, HistorialMedico historialRequest) {
         Cita cita = citaRepository.findById(citaId)
                 .orElseThrow(() -> new RuntimeException("Cita no encontrada con id: " + citaId));
