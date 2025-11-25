@@ -20,6 +20,10 @@ public class MedicoRequestDto {
     @Size(max = 50, message = "Los apellidos no pueden contener más de 50 caracteres")
     private String apellidos;
 
+    @NotBlank(message = "El DNI no puede estar vacío")
+    @Size(min = 8, max = 8, message = "El DNI debe tener 8 caracteres")
+    private String dni;
+    
     @Email
     @NotBlank(message = "El email no puede estar vacío")
     private String email;

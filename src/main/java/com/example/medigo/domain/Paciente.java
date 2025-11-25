@@ -1,19 +1,23 @@
 package com.example.medigo.domain;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 @Entity
+@Table(name = "paciente")
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Paciente extends Usuario {
 
-    @Column(unique = true, length = 8)
+    @Column(length = 8, unique = true)
     private String dni;
 
     @Column(name = "fecha_nacimiento")

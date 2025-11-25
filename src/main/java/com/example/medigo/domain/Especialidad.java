@@ -1,5 +1,6 @@
 package com.example.medigo.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,6 +23,7 @@ public class Especialidad {
     private String nombre_especialidad;
 
     @ManyToMany(mappedBy = "especialidades", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Set<Medico> medicos = new HashSet<>();
 
     private String descripcion;

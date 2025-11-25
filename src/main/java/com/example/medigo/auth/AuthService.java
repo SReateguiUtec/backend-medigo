@@ -70,7 +70,7 @@ public class AuthService {
                 .apellidos(request.getApellidos())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .dni("")
+                .dni(request.getDni())
                 .rol(Rol.MEDICO)
                 .estadoCuenta(EstadoCuenta.ACTIVADA)
                 .build();

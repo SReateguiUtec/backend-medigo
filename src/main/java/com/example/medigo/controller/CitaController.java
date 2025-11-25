@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/citas")
 @RequiredArgsConstructor
@@ -30,8 +32,45 @@ public class CitaController {
     public ResponseEntity<Cita> createCita(
             @Valid @RequestBody CreateCitaRequestDto request,
             @AuthenticationPrincipal Usuario paciente) {
+        System.out.println("=== CREATE CITA ===");
+        System.out.println("Usuario autenticado: " + (paciente != null ? paciente.getEmail() : "NULL"));
+        System.out.println("Rol del usuario: " + (paciente != null ? paciente.getRol() : "NULL"));
+        
+        if (paciente == null) {
+            System.out.println("ERROR: Usuario no autenticado");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        if (!"PACIENTE".equals(paciente.getRol().name())) {
+            System.out.println("ERROR: Usuario no es paciente. Rol: " + paciente.getRol());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
         Cita nuevaCita = citaService.createCita(request, paciente.getId());
         return new ResponseEntity<>(nuevaCita, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/my-appointments")
+    @PreAuthorize("hasRole('PACIENTE')")
+    public ResponseEntity<List<Cita>> getMyAppointments(
+            @AuthenticationPrincipal Usuario paciente) {
+        System.out.println("=== GET MY APPOINTMENTS ===");
+        System.out.println("Usuario autenticado: " + (paciente != null ? paciente.getEmail() : "NULL"));
+        System.out.println("Rol del usuario: " + (paciente != null ? paciente.getRol() : "NULL"));
+        
+        if (paciente == null) {
+            System.out.println("ERROR: Usuario no autenticado");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
+        if (!"PACIENTE".equals(paciente.getRol().name())) {
+            System.out.println("ERROR: Usuario no es paciente. Rol: " + paciente.getRol());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+
+        List<Cita> citas = citaService.findCitasByPaciente(paciente.getId());
+        System.out.println("Citas encontradas: " + citas.size());
+        return ResponseEntity.ok(citas);
     }
 
     @PatchMapping("/{citaId}/cancel")
@@ -39,6 +78,16 @@ public class CitaController {
     public ResponseEntity<Cita> cancelCita(
             @PathVariable Long citaId,
             @AuthenticationPrincipal Usuario usuario) {
+        System.out.println("=== CANCEL CITA ===");
+        System.out.println("Usuario autenticado: " + (usuario != null ? usuario.getEmail() : "NULL"));
+        System.out.println("Rol del usuario: " + (usuario != null ? usuario.getRol() : "NULL"));
+        System.out.println("Cita ID: " + citaId);
+        
+        if (usuario == null) {
+            System.out.println("ERROR: Usuario no autenticado");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
         Cita citaCancelada = citaService.cancelCita(citaId, usuario);
         return ResponseEntity.ok(citaCancelada);
     }
@@ -48,6 +97,16 @@ public class CitaController {
     public ResponseEntity<Cita> getCitaDetails(
             @PathVariable Long citaId,
             @AuthenticationPrincipal Usuario usuario) {
+        System.out.println("=== GET CITA DETAILS ===");
+        System.out.println("Usuario autenticado: " + (usuario != null ? usuario.getEmail() : "NULL"));
+        System.out.println("Rol del usuario: " + (usuario != null ? usuario.getRol() : "NULL"));
+        System.out.println("Cita ID: " + citaId);
+        
+        if (usuario == null) {
+            System.out.println("ERROR: Usuario no autenticado");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        
         Cita cita = citaService.getCitaDetails(citaId, usuario);
         return ResponseEntity.ok(cita);
     }

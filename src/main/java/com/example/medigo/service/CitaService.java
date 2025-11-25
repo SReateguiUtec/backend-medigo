@@ -44,10 +44,21 @@ public class CitaService {
                 .orElseThrow(() -> new ResourceNotFoundException("Paciente no encontrado con ID: " + pacienteId));
 
         Medico medico = medicoRepository.findById(request.getMedicoId())
-                .orElseThrow(() -> new ResourceNotFoundException("Médico no encontrado con ID: " + request.getMedicoId()));
+                .orElseThrow(
+                        () -> new ResourceNotFoundException("Médico no encontrado con ID: " + request.getMedicoId()));
 
         if (medico.getPrecioConsulta() == null || medico.getPrecioConsulta().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalStateException("El médico seleccionado no tiene un precio de consulta válido.");
+        }
+
+        // Verificar si ya existe una cita para este médico en esta fecha/hora
+        boolean existeCita = citaRepository.existsByMedicoIdAndFechaHoraAndEstadoNotCancelada(
+                request.getMedicoId(),
+                request.getFechaHora());
+
+        if (existeCita) {
+            throw new IllegalStateException(
+                    "El médico ya tiene una cita agendada en este horario. Por favor seleccione otra fecha u hora.");
         }
 
         Cita nuevaCita = Cita.builder()
@@ -60,8 +71,9 @@ public class CitaService {
                 .build();
 
         Cita savedCita = citaRepository.save(nuevaCita);
-        log.info("Nueva cita creada con ID: {} para paciente {} con médico {}", savedCita.getId(), paciente.getId(), medico.getId());
-        
+        log.info("Nueva cita creada con ID: {} para paciente {} con médico {}", savedCita.getId(), paciente.getId(),
+                medico.getId());
+
         eventPublisher.publishEvent(new CitaCreadaEvent(this, savedCita));
         return savedCita;
     }
@@ -71,7 +83,8 @@ public class CitaService {
 
         Cita cita = findCitaById(citaId);
 
-        boolean isPacienteInCita = usuario.getRol() == Rol.PACIENTE && cita.getPaciente().getId().equals(usuario.getId());
+        boolean isPacienteInCita = usuario.getRol() == Rol.PACIENTE
+                && cita.getPaciente().getId().equals(usuario.getId());
         boolean isMedicoInCita = usuario.getRol() == Rol.MEDICO && cita.getMedico().getId().equals(usuario.getId());
 
         if (!isPacienteInCita && !isMedicoInCita) {
@@ -84,7 +97,8 @@ public class CitaService {
 
         if (Boolean.TRUE.equals(cita.getEsPagada())) {
             // TODO: Implementar logica de reembolso con Stripe antes de cancelar
-            throw new IllegalStateException("No se puede cancelar una cita que ya ha sido confirmada del pago. Contacte a soporte para un reembolso.");
+            throw new IllegalStateException(
+                    "No se puede cancelar una cita que ya ha sido confirmada del pago. Contacte a soporte para un reembolso.");
         }
 
         cita.setEstado(EstadoCita.CANCELADA);
@@ -96,7 +110,8 @@ public class CitaService {
 
         Cita cita = findCitaById(citaId);
 
-        boolean isPacienteInCita = usuario.getRol() == Rol.PACIENTE && cita.getPaciente().getId().equals(usuario.getId());
+        boolean isPacienteInCita = usuario.getRol() == Rol.PACIENTE
+                && cita.getPaciente().getId().equals(usuario.getId());
         boolean isMedicoInCita = usuario.getRol() == Rol.MEDICO && cita.getMedico().getId().equals(usuario.getId());
 
         if (!isPacienteInCita && !isMedicoInCita) {

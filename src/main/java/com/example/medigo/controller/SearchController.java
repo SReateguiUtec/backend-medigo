@@ -26,14 +26,14 @@ public class SearchController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "nombres") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection) {
-        
-        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") 
-                ? Sort.Direction.DESC 
+
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
                 : Sort.Direction.ASC;
-        
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         Page<MedicoSearchResponseDto> medicos = searchService.getAllMedicos(pageable);
-        
+
         return ResponseEntity.ok(medicos);
     }
 
@@ -45,14 +45,14 @@ public class SearchController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "nombres") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection) {
-        
-        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") 
-                ? Sort.Direction.DESC 
+
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
                 : Sort.Direction.ASC;
-        
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         Page<MedicoSearchResponseDto> medicos = searchService.searchMedicosByNombre(q, pageable);
-        
+
         return ResponseEntity.ok(medicos);
     }
 
@@ -78,14 +78,34 @@ public class SearchController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "nombres") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection) {
-        
-        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") 
-                ? Sort.Direction.DESC 
+
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
                 : Sort.Direction.ASC;
-        
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         Page<MedicoSearchResponseDto> medicos = searchService.getMedicosByEspecialidad(especialidadId, pageable);
-        
+
+        return ResponseEntity.ok(medicos);
+    }
+
+    // Filtrar médicos por nombre de especialidad
+    @GetMapping("/medicos/especialidad/nombre/{nombreEspecialidad}")
+    public ResponseEntity<Page<MedicoSearchResponseDto>> getMedicosByEspecialidadNombre(
+            @PathVariable String nombreEspecialidad,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "nombres") String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDirection) {
+
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Page<MedicoSearchResponseDto> medicos = searchService.getMedicosByEspecialidadNombre(nombreEspecialidad,
+                pageable);
+
         return ResponseEntity.ok(medicos);
     }
 
@@ -98,14 +118,14 @@ public class SearchController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "precioConsulta") String sortBy,
             @RequestParam(defaultValue = "asc") String sortDirection) {
-        
-        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc") 
-                ? Sort.Direction.DESC 
+
+        Sort.Direction direction = sortDirection.equalsIgnoreCase("desc")
+                ? Sort.Direction.DESC
                 : Sort.Direction.ASC;
-        
+
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
         Page<MedicoSearchResponseDto> medicos = searchService.getMedicosByPrecioRange(min, max, pageable);
-        
+
         return ResponseEntity.ok(medicos);
     }
 }

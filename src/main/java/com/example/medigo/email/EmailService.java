@@ -51,6 +51,12 @@ public class EmailService {
         try {
             log.info("Enviando correo con template '{}' a: {}", templateName, to);
             
+            // Verificar que la dirección de correo no esté vacía
+            if (to == null || to.trim().isEmpty()) {
+                log.warn("Dirección de correo vacía o nula. No se enviará el correo.");
+                return;
+            }
+            
             Context context = new Context();
             context.setVariables(variables);
 

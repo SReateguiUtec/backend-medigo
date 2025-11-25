@@ -8,12 +8,17 @@ import com.example.medigo.domain.Medico;
 import com.example.medigo.domain.Paciente;
 import com.example.medigo.domain.Rol;
 import com.example.medigo.domain.Usuario;
+import com.example.medigo.domain.EstadoCuenta;
 import com.example.medigo.dto.response.MedicoResponseDto;
 import com.example.medigo.dto.response.PacienteResponseDto;
 import com.example.medigo.dto.response.UpdateEstadoCuentaDto;
 import com.example.medigo.exceptions.UserAlreadyExistsException;
 import com.example.medigo.exceptions.UserNotFoundException;
 import com.example.medigo.repository.UsuarioRepository;
+import com.example.medigo.repository.EspecialidadRepository;
+import com.example.medigo.domain.Especialidad;
+import java.util.Collections;
+import java.util.HashSet;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +31,7 @@ import java.util.Map;
 public class ProfileService {
 
     private final UsuarioRepository usuarioRepository;
+    private final EspecialidadRepository especialidadRepository;
     private final ModelMapper modelMapper;
 
     private Usuario obtenerUsuarioPorEmail(String email) {
@@ -71,18 +77,18 @@ public class ProfileService {
         }
         if (updates.containsKey("email")) {
             String newEmail = (String) updates.get("email");
-            if (newEmail != null && !newEmail.isEmpty() && 
-                !newEmail.equals(paciente.getEmail() != null ? paciente.getEmail() : "") &&
-                usuarioRepository.existsByEmail(newEmail)) {
+            if (newEmail != null && !newEmail.isEmpty() &&
+                    !newEmail.equals(paciente.getEmail() != null ? paciente.getEmail() : "") &&
+                    usuarioRepository.existsByEmail(newEmail)) {
                 throw new UserAlreadyExistsException("Email ya está en uso.");
             }
             paciente.setEmail(newEmail);
         }
         if (updates.containsKey("telefono")) {
             String newTelefono = (String) updates.get("telefono");
-            if (newTelefono != null && !newTelefono.isEmpty() && 
-                !newTelefono.equals(paciente.getTelefono() != null ? paciente.getTelefono() : "") &&
-                usuarioRepository.findByTelefono(newTelefono).isPresent()) {
+            if (newTelefono != null && !newTelefono.isEmpty() &&
+                    !newTelefono.equals(paciente.getTelefono() != null ? paciente.getTelefono() : "") &&
+                    usuarioRepository.findByTelefono(newTelefono).isPresent()) {
                 throw new UserAlreadyExistsException("Teléfono ya está en uso.");
             }
             paciente.setTelefono(newTelefono);
@@ -110,11 +116,17 @@ public class ProfileService {
             }
         }
 
+        if (paciente.getEstadoCuenta() == null) {
+            paciente.setEstadoCuenta(com.example.medigo.domain.EstadoCuenta.ACTIVADA);
+        }
+
         usuarioRepository.save(paciente);
         return modelMapper.map(paciente, PacienteResponseDto.class);
     }
 
     private Object updateMedicoProfile(Medico medico, Map<String, Object> updates) {
+        System.out.println("Updating Medico Profile: " + medico.getEmail());
+        System.out.println("Updates received: " + updates);
 
         // Campos de Usuario (clase padre): nombres, apellidos, email, telefono, edad,
         // rutaFoto
@@ -126,18 +138,18 @@ public class ProfileService {
         }
         if (updates.containsKey("email")) {
             String newEmail = (String) updates.get("email");
-            if (newEmail != null && !newEmail.isEmpty() && 
-                !newEmail.equals(medico.getEmail() != null ? medico.getEmail() : "") &&
-                usuarioRepository.existsByEmail(newEmail)) {
+            if (newEmail != null && !newEmail.isEmpty() &&
+                    !newEmail.equals(medico.getEmail() != null ? medico.getEmail() : "") &&
+                    usuarioRepository.existsByEmail(newEmail)) {
                 throw new UserAlreadyExistsException("Email ya está en uso.");
             }
             medico.setEmail(newEmail);
         }
         if (updates.containsKey("telefono")) {
             String newTelefono = (String) updates.get("telefono");
-            if (newTelefono != null && !newTelefono.isEmpty() && 
-                !newTelefono.equals(medico.getTelefono() != null ? medico.getTelefono() : "") &&
-                usuarioRepository.findByTelefono(newTelefono).isPresent()) {
+            if (newTelefono != null && !newTelefono.isEmpty() &&
+                    !newTelefono.equals(medico.getTelefono() != null ? medico.getTelefono() : "") &&
+                    usuarioRepository.findByTelefono(newTelefono).isPresent()) {
                 throw new UserAlreadyExistsException("Teléfono ya está en uso.");
             }
             medico.setTelefono(newTelefono);
@@ -159,6 +171,7 @@ public class ProfileService {
             medico.setDni((String) updates.get("dni"));
         }
         if (updates.containsKey("numeroColegiado")) {
+            System.out.println("Updating numeroColegiado to: " + updates.get("numeroColegiado"));
             medico.setNumeroColegiado((String) updates.get("numeroColegiado"));
         }
         if (updates.containsKey("bio")) {
@@ -177,16 +190,39 @@ public class ProfileService {
                 } else if (precioObj instanceof BigDecimal) {
                     precio = (BigDecimal) precioObj;
                 } else if (precioObj != null) {
-                    // Try to parse as string representation
+
                     precio = new BigDecimal(precioObj.toString());
                 }
             } catch (NumberFormatException e) {
-                // If we can't parse the price, we'll leave it as null and not update
-                // This prevents errors when invalid data is sent
             }
             if (precio != null) {
                 medico.setPrecioConsulta(precio);
             }
+        }
+
+        if (updates.containsKey("especialidad")) {
+            String especialidadNombre = (String) updates.get("especialidad");
+            if (especialidadNombre != null && !especialidadNombre.isEmpty()) {
+                System.out.println("Searching for specialty: " + especialidadNombre);
+                Especialidad especialidad = especialidadRepository.findByNombre(especialidadNombre)
+                        .orElseGet(() -> {
+                            Especialidad newEspecialidad = new Especialidad();
+                            newEspecialidad.setNombre_especialidad(especialidadNombre);
+                            return especialidadRepository.save(newEspecialidad);
+                        });
+
+                if (especialidad != null) {
+                    System.out.println("Specialty found/created: " + especialidad.getId());
+                    medico.setEspecialidades(new HashSet<>(Collections.singletonList(especialidad)));
+                } else {
+                    System.out.println("Failed to create/find specialty: " + especialidadNombre);
+                }
+            }
+        }
+
+        // Ensure account status is preserved
+        if (medico.getEstadoCuenta() == null) {
+            medico.setEstadoCuenta(com.example.medigo.domain.EstadoCuenta.ACTIVADA);
         }
 
         usuarioRepository.save(medico);

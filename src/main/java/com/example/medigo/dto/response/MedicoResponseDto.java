@@ -2,6 +2,7 @@ package com.example.medigo.dto.response;
 
 import com.example.medigo.domain.Especialidad;
 import com.example.medigo.domain.Rol;
+import com.example.medigo.domain.EstadoCuenta;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -29,4 +30,5 @@ public class MedicoResponseDto {
     private BigDecimal precioConsulta;
     private Set<Especialidad> especialidades;
     private ZonedDateTime createdAt;
+    private EstadoCuenta estadoCuenta;
 }

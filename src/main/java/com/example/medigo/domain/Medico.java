@@ -1,5 +1,7 @@
 package com.example.medigo.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,12 +14,13 @@ import java.util.Set;
 @Getter
 @Setter
 @NoArgsConstructor
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Medico extends Usuario {
 
     @Column(unique = true, length = 8)
     private String dni;
 
-    @Column(unique = true, length = 8)
+    @Column(unique = true, length = 20)
     private String numeroColegiado;
 
     private String bio;
@@ -31,6 +34,7 @@ public class Medico extends Usuario {
             joinColumns = @JoinColumn(name = "medico_id"),
             inverseJoinColumns = @JoinColumn(name = "especialidad_id")
     )
+    @JsonIgnore
     private Set<Especialidad> especialidades = new HashSet<>();
 
     @Builder
