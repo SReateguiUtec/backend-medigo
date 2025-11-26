@@ -72,16 +72,14 @@ class VideoControllerTest {
                 .build();
 
         videoRoomResponse = new VideoRoomResponseDto();
-        videoRoomResponse.setRoomUrl("https://daily.co/test-room");
+        videoRoomResponse.setRoomUrl("https://whereby.com/test-room");
         videoRoomResponse.setCitaId(1L);
 
         joinResponse = new JoinVideoRoomResponseDto();
-        joinResponse.setRoomUrl("https://daily.co/test-room");
-        joinResponse.setToken("daily-token-12345");
-    }
+        joinResponse.setRoomUrl("https://whereby.com/test-room");
+        joinResponse.setToken(null); // Whereby doesn't use tokens like Daily
 
-    // NOTE: All authentication-dependent tests removed because security is disabled
-    // VideoController uses Usuario/Authentication parameters which are null when filters are disabled
+    }
 
     @Test
     @DisplayName("Should get video room details successfully when paciente is authenticated")
@@ -94,7 +92,7 @@ class VideoControllerTest {
         mockMvc.perform(get("/api/video/rooms/cita/1")
                         .with(user(testPaciente)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.roomUrl").value("https://daily.co/test-room"))
+                .andExpect(jsonPath("$.roomUrl").value("https://whereby.com/test-room"))
                 .andExpect(jsonPath("$.citaId").value(1));
     }
 
@@ -109,7 +107,7 @@ class VideoControllerTest {
         mockMvc.perform(get("/api/video/rooms/cita/1")
                         .with(user(testMedico)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.roomUrl").value("https://daily.co/test-room"));
+                .andExpect(jsonPath("$.roomUrl").value("https://whereby.com/test-room"));
     }
 
     @Test

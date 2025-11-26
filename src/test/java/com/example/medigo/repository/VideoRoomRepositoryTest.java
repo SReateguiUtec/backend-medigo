@@ -105,14 +105,12 @@ class VideoRoomRepositoryTest {
 
         testVideoRoom = VideoRoom.builder()
                 .roomName("medigo-cita-1-test")
-                .roomUrl("https://test-domain.daily.co/medigo-cita-1-test")
+                .roomUrl("https://whereby.com/medigo-cita-1-test")
                 .cita(testCita)
                 .createdAt(ZonedDateTime.now())
                 .expiresAt(ZonedDateTime.now().plusDays(1))
                 .status("ACTIVE")
-                .dailyRoomId("test-room-123")
-                .patientToken("test-patient-token")
-                .doctorToken("test-doctor-token")
+                // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for Whereby
                 .recordingEnabled(true)
                 .build();
     }
@@ -243,14 +241,12 @@ class VideoRoomRepositoryTest {
 
         VideoRoom videoRoom2 = VideoRoom.builder()
                 .roomName("medigo-cita-2-test")
-                .roomUrl("https://test-domain.daily.co/medigo-cita-2-test")
+                .roomUrl("https://whereby.com/medigo-cita-2-test")
                 .cita(cita2)
                 .createdAt(ZonedDateTime.now())
                 .expiresAt(ZonedDateTime.now().plusDays(1))
                 .status("ACTIVE")
-                .dailyRoomId("test-room-456")
-                .patientToken("test-patient-token-2")
-                .doctorToken("test-doctor-token-2")
+                // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for Whereby
                 .recordingEnabled(true)
                 .build();
         videoRoomRepository.save(videoRoom2);
@@ -267,4 +263,3 @@ class VideoRoomRepositoryTest {
         assertThat(videoRoomRepository.count()).isEqualTo(2);
     }
 }
-

@@ -1,6 +1,6 @@
 package com.example.medigo.service;
 
-import com.example.medigo.config.DailyConfig;
+import com.example.medigo.config.WherebyConfig;
 import com.example.medigo.domain.*;
 import com.example.medigo.dto.response.JoinVideoRoomResponseDto;
 import com.example.medigo.dto.response.VideoRoomResponseDto;
@@ -9,8 +9,6 @@ import com.example.medigo.exceptions.ResourceNotFoundException;
 import com.example.medigo.repository.VideoRoomRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -22,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.ZonedDateTime;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -34,7 +31,7 @@ public class VideoRoomService {
 
     private final VideoRoomRepository videoRoomRepository;
     private final CitaService citaService;
-    private final DailyConfig dailyConfig;
+    private final WherebyConfig wherebyConfig;  // Changed from DailyConfig to WherebyConfig
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -80,17 +77,11 @@ public class VideoRoomService {
         ZonedDateTime expirationTime = cita.getFechaHora().plusHours(1);
         long expirationEpoch = expirationTime.toInstant().getEpochSecond();
 
-        // Preparar request para Daily API
+        // Preparar request para Whereby API
         Map<String, Object> roomRequest = new HashMap<>();
-        Map<String, Object> properties = new HashMap<>();
-        properties.put("exp", expirationEpoch);
-        properties.put("enable_recording", false);
-        properties.put("start_audio_off", true);
-        properties.put("start_video_off", true);
-        roomRequest.put("name", roomName);
-        roomRequest.put("properties", properties);
+        roomRequest.put("endDate", expirationTime.toString());
 
-        // Llamar a Daily API para crear la sala
+        // Llamar a Whereby API para crear la sala
         String requestBody;
         try {
             requestBody = objectMapper.writeValueAsString(roomRequest);
@@ -98,13 +89,13 @@ public class VideoRoomService {
             throw new RuntimeException("Error al procesar datos JSON: " + e.getMessage(), e);
         }
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + dailyConfig.getApiKey());
+        headers.set("Authorization", "Bearer " + wherebyConfig.getApiKey());  // Changed from dailyConfig to wherebyConfig
         headers.set("Content-Type", "application/json");
         HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
 
         try {
             ResponseEntity<String> response = restTemplate.exchange(
-                    dailyConfig.getApiUrl() + "/rooms",
+                    wherebyConfig.getApiUrl() + "/meetings",  // Changed from dailyConfig to wherebyConfig
                     HttpMethod.POST,
                     entity,
                     String.class
@@ -115,79 +106,33 @@ public class VideoRoomService {
                 try {
                     roomData = objectMapper.readTree(response.getBody());
                 } catch (Exception e) {
-                    throw new RuntimeException("Error al procesar respuesta de Daily API: " + e.getMessage(), e);
+                    throw new RuntimeException("Error al procesar respuesta de Whereby API: " + e.getMessage(), e);
                 }
-                String roomUrl = roomData.get("url").asText();
-                String dailyRoomId = roomData.get("id").asText();
-
-                // Generar tokens para paciente y médico
-                String patientToken = generateMeetingToken(
-                        roomName,
-                        cita.getPaciente().getId().toString(),
-                        cita.getPaciente().getEmail(),
-                        false,
-                        expirationEpoch
-                );
-                String doctorToken = generateMeetingToken(
-                        roomName,
-                        cita.getMedico().getId().toString(),
-                        cita.getMedico().getEmail(),
-                        true,
-                        expirationEpoch
-                );
+                String roomUrl = roomData.get("roomUrl").asText();  // Changed from "url" to "roomUrl"
+                String roomNameFromResponse = roomData.get("roomName").asText();  // Changed from "name" to "roomName"
 
                 // Guardar información de la sala en la base de datos
                 VideoRoom videoRoom = VideoRoom.builder()
-                        .roomName(roomName)
+                        .roomName(roomNameFromResponse)  // Use the room name from Whereby response
                         .roomUrl(roomUrl)
                         .cita(cita)
                         .expiresAt(expirationTime)
                         .status("ACTIVE")
-                        .dailyRoomId(dailyRoomId)
-                        .patientToken(patientToken)
-                        .doctorToken(doctorToken)
+                        // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for Whereby
                         .recordingEnabled(false)
                         .build();
 
                 VideoRoom savedRoom = videoRoomRepository.save(videoRoom);
                 return savedRoom;
             } else {
-                throw new RuntimeException("Error al crear sala en Daily API: " + response.getStatusCode());
+                throw new RuntimeException("Error al crear sala en Whereby API: " + response.getStatusCode());
             }
         } catch (Exception e) {
             throw new RuntimeException("Error al crear sala de video: " + e.getMessage(), e);
         }
     }
 
-     // Generar un token de reunión seguro para acceder a la sala de video,
-     // los tokens son auto-firmados usando la API key de Daily como secreto
-    private String generateMeetingToken(String roomName, String userId, String userName,
-                                        boolean isOwner, long expirationTime) {
-        long nowInSeconds = System.currentTimeMillis() / 1000;
-
-        // Crear claims del JWT para el token de Daily
-        Map<String, Object> claims = new HashMap<>();
-        claims.put("r", roomName);  // room name
-        claims.put("d", dailyConfig.getDailyDomain());  // daily domain
-        claims.put("user_id", userId);
-        claims.put("user_name", userName);
-
-        if (isOwner) {
-            claims.put("is_owner", true);
-            claims.put("enable_recording", false);
-        }
-
-        // Crear y firmar el token JWT
-        String token = Jwts.builder()
-                .setClaims(claims)
-                .setIssuedAt(new Date(nowInSeconds * 1000))
-                .setExpiration(new Date(expirationTime * 1000))
-                .signWith(SignatureAlgorithm.HS256, dailyConfig.getApiKey())
-                .compact();
-        return token;
-    }
-
-     // Obtener sala de video por ID de cita
+    // Obtener sala de video por ID de cita
     @Transactional(readOnly = true)
     public VideoRoom getVideoRoomByCitaId(Long citaId) {
         VideoRoom room = videoRoomRepository.findByCitaId(citaId)
@@ -206,6 +151,8 @@ public class VideoRoomService {
     // Obtener el token de acceso apropiado basado en el rol del usuario
     @Transactional(readOnly = true)
     public String getAccessToken(Long citaId, Usuario usuario) {
+        // For Whereby, we don't need separate tokens for patient and doctor
+        // The room URL itself is sufficient for access
         VideoRoom room = getVideoRoomByCitaId(citaId);
         Cita cita = room.getCita();
 
@@ -218,7 +165,8 @@ public class VideoRoomService {
         if (!isPaciente && !isMedico) {
             throw new InvalidCredentialsException("No tiene permiso para acceder a esta sala de video");
         }
-        return isMedico ? room.getDoctorToken() : room.getPatientToken();
+        // For Whereby, we return null as no specific token is needed
+        return null;
     }
 
     @Transactional
@@ -234,6 +182,7 @@ public class VideoRoomService {
                 .recordingEnabled(room.getRecordingEnabled())
                 .build();
     }
+    
     @Transactional
     public JoinVideoRoomResponseDto createJoinResponseDto(Long citaId, Usuario usuario) {
         // First try to get the existing room
@@ -264,18 +213,19 @@ public class VideoRoomService {
             return createErrorJoinResponseDto("El acceso a la videollamada ya no está disponible. La cita programada ha expirado.");
         }
         
-        String accessToken = getAccessToken(citaId, usuario);
+        // For Whereby, we don't need separate tokens, just the room URL
         boolean isDoctor = usuario.getRol() == Rol.MEDICO;
         
         return JoinVideoRoomResponseDto.builder()
                 .success(true)
                 .roomUrl(room.getRoomUrl())
-                .token(accessToken)
+                .token(null) // No token needed for Whereby
                 .roomName(room.getRoomName())
                 .isDoctor(isDoctor)
                 .message("Acceso a sala de video concedido")
                 .build();
     }
+    
     @Transactional(readOnly = true)
     public JoinVideoRoomResponseDto createErrorJoinResponseDto(String message) {
         return JoinVideoRoomResponseDto.builder()

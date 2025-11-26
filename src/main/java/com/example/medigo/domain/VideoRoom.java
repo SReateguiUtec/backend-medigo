@@ -36,14 +36,12 @@ public class VideoRoom {
     @Column(nullable = false)
     private String status;
 
-    @Column(nullable = false)
-    private String dailyRoomId;
+    // Removed dailyRoomId as it's specific to Daily.co
+    // private String dailyRoomId;
 
-    @Column(columnDefinition = "TEXT")
-    private String patientToken;
-
-    @Column(columnDefinition = "TEXT")
-    private String doctorToken;
+    // Removed tokens as Whereby doesn't use the same token system
+    // private String patientToken;
+    // private String doctorToken;
 
     @Column(nullable = false)
     private Boolean recordingEnabled = true;

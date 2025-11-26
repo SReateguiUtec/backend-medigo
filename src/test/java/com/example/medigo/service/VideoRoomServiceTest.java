@@ -1,6 +1,6 @@
 package com.example.medigo.service;
 
-import com.example.medigo.config.DailyConfig;
+import com.example.medigo.config.WherebyConfig;
 import com.example.medigo.domain.*;
 import com.example.medigo.dto.response.JoinVideoRoomResponseDto;
 import com.example.medigo.dto.response.VideoRoomResponseDto;
@@ -32,7 +32,7 @@ class VideoRoomServiceTest {
     private CitaService citaService;
 
     @Mock
-    private DailyConfig dailyConfig;
+    private WherebyConfig wherebyConfig;  // Changed from DailyConfig to WherebyConfig
 
     @Mock
     private RestTemplate restTemplate;
@@ -80,13 +80,11 @@ class VideoRoomServiceTest {
         testVideoRoom = VideoRoom.builder()
                 .id(1L)
                 .roomName("medigo-cita-1-1234567890")
-                .roomUrl("https://test.daily.co/medigo-cita-1-1234567890")
+                .roomUrl("https://test.whereby.com/medigo-cita-1-1234567890")
                 .cita(testCita)
                 .expiresAt(ZonedDateTime.now().plusHours(24))
                 .status("ACTIVE")
-                .dailyRoomId("daily-room-id-123")
-                .patientToken("patient-token-123")
-                .doctorToken("doctor-token-123")
+                // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for Whereby
                 .recordingEnabled(false)
                 .build();
 
@@ -99,17 +97,16 @@ class VideoRoomServiceTest {
         testUsuarioMedico.setId(2L);
         testUsuarioMedico.setRol(Rol.MEDICO);
 
-        // Setup DailyConfig
-        when(dailyConfig.getApiKey()).thenReturn("test-api-key");
-        when(dailyConfig.getApiUrl()).thenReturn("https://api.daily.co/v1");
-        when(dailyConfig.getDailyDomain()).thenReturn("test.daily.co");
+        // Setup WherebyConfig
+        when(wherebyConfig.getApiKey()).thenReturn("test-api-key");
+        when(wherebyConfig.getApiUrl()).thenReturn("https://api.whereby.dev/v1");
     }
 
     @Test
     @DisplayName("Should create video room for cita when no existing room and cita exists")
     void shouldCreateVideoRoomForCitaWhenNoExistingRoomAndCitaExists() {
         // Given
-        String dailyApiResponse = "{\"id\":\"daily-room-id-123\",\"name\":\"medigo-cita-1-1234567890\",\"url\":\"https://test.daily.co/medigo-cita-1-1234567890\"}";
+        String wherebyApiResponse = "{\"roomName\":\"medigo-cita-1-1234567890\",\"roomUrl\":\"https://test.whereby.com/medigo-cita-1-1234567890\"}";
         
         // Create a cita with CONFIRMADA state for the validation
         Cita confirmedCita = new Cita();
@@ -127,7 +124,7 @@ class VideoRoomServiceTest {
                 eq(HttpMethod.POST), 
                 any(), 
                 eq(String.class)))
-        .thenReturn(new ResponseEntity<>(dailyApiResponse, HttpStatus.OK));
+        .thenReturn(new ResponseEntity<>(wherebyApiResponse, HttpStatus.OK));
         when(videoRoomRepository.save(any(VideoRoom.class))).thenReturn(testVideoRoom);
 
         // When
@@ -169,13 +166,11 @@ class VideoRoomServiceTest {
         VideoRoom expiredRoom = VideoRoom.builder()
                 .id(1L)
                 .roomName("medigo-cita-1-1234567890")
-                .roomUrl("https://test.daily.co/medigo-cita-1-1234567890")
+                .roomUrl("https://test.whereby.com/medigo-cita-1-1234567890")
                 .cita(testCita)
                 .expiresAt(ZonedDateTime.now().minusHours(1)) // Expired
                 .status("ACTIVE")
-                .dailyRoomId("daily-room-id-123")
-                .patientToken("patient-token-123")
-                .doctorToken("doctor-token-123")
+                // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for Whereby
                 .recordingEnabled(false)
                 .build();
                 
@@ -233,13 +228,11 @@ class VideoRoomServiceTest {
         VideoRoom expiredRoom = VideoRoom.builder()
                 .id(1L)
                 .roomName("medigo-cita-1-1234567890")
-                .roomUrl("https://test.daily.co/medigo-cita-1-1234567890")
+                .roomUrl("https://test.whereby.com/medigo-cita-1-1234567890")
                 .cita(testCita)
                 .expiresAt(ZonedDateTime.now().minusHours(1)) // Expired
                 .status("ACTIVE")
-                .dailyRoomId("daily-room-id-123")
-                .patientToken("patient-token-123")
-                .doctorToken("doctor-token-123")
+                // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for Whereby
                 .recordingEnabled(false)
                 .build();
                 
@@ -260,8 +253,8 @@ class VideoRoomServiceTest {
     }
 
     @Test
-    @DisplayName("Should get patient token when user is paciente in cita")
-    void shouldGetPatientTokenWhenUserIsPacienteInCita() {
+    @DisplayName("Should return null token when user is paciente in cita (Whereby doesn't need separate tokens)")
+    void shouldReturnNullTokenWhenUserIsPacienteInCita() {
         // Given
         testUsuarioPaciente.setId(1L); // Same as paciente in cita
         when(videoRoomRepository.findByCitaId(1L)).thenReturn(Optional.of(testVideoRoom));
@@ -270,14 +263,13 @@ class VideoRoomServiceTest {
         String result = videoRoomService.getAccessToken(1L, testUsuarioPaciente);
 
         // Then
-        assertNotNull(result);
-        assertEquals("patient-token-123", result);
+        assertNull(result); // Whereby doesn't need separate tokens
         verify(videoRoomRepository, times(1)).findByCitaId(1L);
     }
 
     @Test
-    @DisplayName("Should get doctor token when user is medico in cita")
-    void shouldGetDoctorTokenWhenUserIsMedicoInCita() {
+    @DisplayName("Should return null token when user is medico in cita (Whereby doesn't need separate tokens)")
+    void shouldReturnNullTokenWhenUserIsMedicoInCita() {
         // Given
         testUsuarioMedico.setId(2L); // Same as medico in cita
         when(videoRoomRepository.findByCitaId(1L)).thenReturn(Optional.of(testVideoRoom));
@@ -286,8 +278,7 @@ class VideoRoomServiceTest {
         String result = videoRoomService.getAccessToken(1L, testUsuarioMedico);
 
         // Then
-        assertNotNull(result);
-        assertEquals("doctor-token-123", result);
+        assertNull(result); // Whereby doesn't need separate tokens
         verify(videoRoomRepository, times(1)).findByCitaId(1L);
     }
 
@@ -338,11 +329,10 @@ class VideoRoomServiceTest {
         // Then
         assertNotNull(result);
         assertTrue(result.getSuccess());
-        assertEquals("https://test.daily.co/medigo-cita-1-1234567890", result.getRoomUrl());
-        assertEquals("patient-token-123", result.getToken());
+        assertEquals("https://test.whereby.com/medigo-cita-1-1234567890", result.getRoomUrl());
+        assertNull(result.getToken()); // Whereby doesn't need tokens
         assertFalse(result.getIsDoctor());
-        // Note: getVideoRoomByCitaId is called twice - once in createJoinResponseDto and once in getAccessToken
-        verify(videoRoomRepository, times(2)).findByCitaId(1L);
+        verify(videoRoomRepository, times(1)).findByCitaId(1L);
     }
 
     @Test
@@ -358,11 +348,10 @@ class VideoRoomServiceTest {
         // Then
         assertNotNull(result);
         assertTrue(result.getSuccess());
-        assertEquals("https://test.daily.co/medigo-cita-1-1234567890", result.getRoomUrl());
-        assertEquals("doctor-token-123", result.getToken());
+        assertEquals("https://test.whereby.com/medigo-cita-1-1234567890", result.getRoomUrl());
+        assertNull(result.getToken()); // Whereby doesn't need tokens
         assertTrue(result.getIsDoctor());
-        // Note: getVideoRoomByCitaId is called twice - once in createJoinResponseDto and once in getAccessToken
-        verify(videoRoomRepository, times(2)).findByCitaId(1L);
+        verify(videoRoomRepository, times(1)).findByCitaId(1L);
     }
 
     @Test
