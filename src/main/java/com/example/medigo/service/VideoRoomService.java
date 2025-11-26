@@ -55,15 +55,29 @@ public class VideoRoomService {
             return room;
         }
 
-        // Obtener la cita, lanzar excepcion si la cita no fue pagada
+        // Obtener la cita, permitir crear sala para citas pendientes o confirmadas
         Cita cita = citaService.findCitaById(citaId);
-        if (cita.getEstado() != EstadoCita.CONFIRMADA) { 
-            throw new IllegalStateException("El pago hacia el doctor no ha sido confirmado");
+        if (cita.getEstado() != EstadoCita.CONFIRMADA && cita.getEstado() != EstadoCita.PENDIENTE) { 
+            throw new IllegalStateException("La cita no está en un estado válido para crear una sala de video");
         }
+        
+        // Verificar que esté dentro del tiempo permitido para crear la sala (solo a la hora de inicio o después)
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime appointmentTime = cita.getFechaHora();
+        ZonedDateTime timeWindowEnd = appointmentTime.plusHours(1); // 1 hora después (duración máxima de la videollamada)
+        
+        if (now.isBefore(appointmentTime)) {
+            throw new IllegalStateException("La sala de video solo puede crearse a partir de la hora programada de inicio de la cita: " + appointmentTime.toString());
+        }
+        
+        if (now.isAfter(timeWindowEnd)) {
+            throw new IllegalStateException("La sala de video ya no está disponible. La cita programada ha expirado.");
+        }
+        
         // Generar nombre único para la sala
         String roomName = "medigo-cita-" + citaId + "-" + System.currentTimeMillis();
-        // Calcular tiempo de expiración (24 horas después de la cita)
-        ZonedDateTime expirationTime = cita.getFechaHora().plusHours(24);
+        // Calcular tiempo de expiración (1 hora después de la cita)
+        ZonedDateTime expirationTime = cita.getFechaHora().plusHours(1);
         long expirationEpoch = expirationTime.toInstant().getEpochSecond();
 
         // Preparar request para Daily API
@@ -220,9 +234,36 @@ public class VideoRoomService {
                 .recordingEnabled(room.getRecordingEnabled())
                 .build();
     }
-    @Transactional(readOnly = true)
+    @Transactional
     public JoinVideoRoomResponseDto createJoinResponseDto(Long citaId, Usuario usuario) {
-        VideoRoom room = getVideoRoomByCitaId(citaId);
+        // First try to get the existing room
+        VideoRoom room;
+        try {
+            room = getVideoRoomByCitaId(citaId);
+        } catch (ResourceNotFoundException e) {
+            // If room doesn't exist, try to create it
+            try {
+                room = createVideoRoomForCita(citaId);
+            } catch (Exception creationException) {
+                log.error("Failed to create video room for cita ID: {}", citaId, creationException);
+                return createErrorJoinResponseDto("No se pudo crear la sala de video para la cita ID: " + citaId);
+            }
+        }
+        
+        // Verificar que esté dentro del tiempo permitido para unirse a la sala
+        Cita cita = room.getCita();
+        ZonedDateTime now = ZonedDateTime.now();
+        ZonedDateTime appointmentTime = cita.getFechaHora();
+        ZonedDateTime timeWindowEnd = appointmentTime.plusHours(1); // 1 hora después (duración máxima de la videollamada)
+        
+        if (now.isBefore(appointmentTime)) {
+            return createErrorJoinResponseDto("El acceso a la videollamada solo está permitido a partir de la hora programada de inicio de la cita: " + appointmentTime.toString());
+        }
+        
+        if (now.isAfter(timeWindowEnd)) {
+            return createErrorJoinResponseDto("El acceso a la videollamada ya no está disponible. La cita programada ha expirado.");
+        }
+        
         String accessToken = getAccessToken(citaId, usuario);
         boolean isDoctor = usuario.getRol() == Rol.MEDICO;
         
