@@ -37,11 +37,7 @@ public class CitaService {
     public Cita saveCita(Cita cita) {
         return citaRepository.save(cita);
     }
-    @Transactional
-    public void deleteCita(Long citaId) {
-        citaRepository.deleteById(citaId);
-    }
-    
+
     @Transactional
     public Cita createCita(CreateCitaRequestDto request, Long pacienteId) {
         Paciente paciente = pacienteRepository.findById(pacienteId)
@@ -78,7 +74,8 @@ public class CitaService {
         log.info("Nueva cita creada con ID: {} para paciente {} con médico {}", savedCita.getId(), paciente.getId(),
                 medico.getId());
 
-        eventPublisher.publishEvent(new CitaCreadaEvent(this, savedCita));
+        // eventPublisher.publishEvent(new CitaCreadaEvent(this, savedCita)); // Moved
+        // to StripePaymentService upon successful payment
         return savedCita;
     }
 

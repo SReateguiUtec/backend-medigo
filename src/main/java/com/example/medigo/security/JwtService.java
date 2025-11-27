@@ -1,6 +1,7 @@
 package com.example.medigo.security;
 
 import io.jsonwebtoken.*;
+import com.example.medigo.domain.Usuario;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,14 +37,27 @@ public class JwtService {
         List<String> roles = userDetails.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
-        
+
         log.debug("Generating token for user: {} with roles: {}", userDetails.getUsername(), roles);
-        
+
+        Usuario usuario = (Usuario) userDetails;
+
         return Jwts.builder()
                 .subject(userDetails.getUsername())
                 .claim("roles", roles)
+                .claim("userId", usuario.getId())
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + accessTokenExpiration))
+                .signWith(getSigningKey())
+                .compact();
+    }
+
+    public String generateRefreshToken(UserDetails userDetails) {
+        Date now = new Date();
+        return Jwts.builder()
+                .subject(userDetails.getUsername())
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + refreshTokenExpiration))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -54,7 +68,7 @@ public class JwtService {
                     .verifyWith((SecretKey) getSigningKey())
                     .build()
                     .parseSignedClaims(token);
-            
+
             log.debug("Token validated successfully for user: {}", claims.getPayload().getSubject());
             return true;
         } catch (JwtException | IllegalArgumentException e) {
@@ -72,7 +86,7 @@ public class JwtService {
                     .parseSignedClaims(token)
                     .getPayload()
                     .getSubject();
-            
+
             log.debug("Username extracted from token: {}", username);
             return username;
         } catch (JwtException e) {
@@ -80,7 +94,7 @@ public class JwtService {
             return null;
         }
     }
-    
+
     public List<String> extractRoles(String token) {
         try {
             Claims claims = Jwts.parser()
@@ -88,7 +102,7 @@ public class JwtService {
                     .build()
                     .parseSignedClaims(token)
                     .getPayload();
-            
+
             @SuppressWarnings("unchecked")
             List<String> roles = (List<String>) claims.get("roles");
             log.debug("Roles extracted from token: {}", roles);

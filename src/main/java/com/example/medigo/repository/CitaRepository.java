@@ -14,25 +14,36 @@ import java.util.Optional;
 @Repository
 public interface CitaRepository extends JpaRepository<Cita, Long> {
 
-    List<Cita> findByPacienteId(Long pacienteId);
+        List<Cita> findByPacienteId(Long pacienteId);
 
-    List<Cita> findByMedicoId(Long medicoId);
+        List<Cita> findByMedicoId(Long medicoId);
 
-    List<Cita> findByEstado(EstadoCita estado);
+        List<Cita> findByEstado(EstadoCita estado);
 
-    Optional<Cita> findByStripeSessionId(String stripeSessionId);
+        Optional<Cita> findByStripeSessionId(String stripeSessionId);
 
-    List<Cita> findByPacienteIdAndEstado(Long pacienteId, EstadoCita estado);
+        List<Cita> findByPacienteIdAndEstado(Long pacienteId, EstadoCita estado);
 
-    List<Cita> findByMedicoIdAndEstado(Long medicoId, EstadoCita estado);
+        List<Cita> findByMedicoIdAndEstado(Long medicoId, EstadoCita estado);
 
-    // Verificar si existe una cita para un médico en una fecha/hora específica
-    // (excluyendo canceladas)
-    @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM Cita c " +
-            "WHERE c.medico.id = :medicoId " +
-            "AND c.fechaHora = :fechaHora " +
-            "AND c.estado != 'CANCELADA'")
-    boolean existsByMedicoIdAndFechaHoraAndEstadoNotCancelada(
-            @Param("medicoId") Long medicoId,
-            @Param("fechaHora") ZonedDateTime fechaHora);
+        // Verificar si existe una cita para un médico en una fecha/hora específica
+        // (excluyendo canceladas y pendientes no pagadas)
+        @Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false END FROM Cita c " +
+                        "WHERE c.medico.id = :medicoId " +
+                        "AND c.fechaHora = :fechaHora " +
+                        "AND c.estado != 'CANCELADA' " +
+                        "AND (c.estado != 'PENDIENTE' OR c.esPagada = true)")
+        boolean existsByMedicoIdAndFechaHoraAndEstadoNotCancelada(
+                        @Param("medicoId") Long medicoId,
+                        @Param("fechaHora") ZonedDateTime fechaHora);
+
+        // Buscar citas en un rango de fechas (excluyendo canceladas y pendientes no pagadas)
+        @Query("SELECT c FROM Cita c WHERE c.medico.id = :medicoId " +
+                        "AND c.fechaHora BETWEEN :inicio AND :fin " +
+                        "AND c.estado != 'CANCELADA' " +
+                        "AND (c.estado != 'PENDIENTE' OR c.esPagada = true)")
+        List<Cita> findByMedicoIdAndFechaHoraBetweenAndEstadoNotCancelada(
+                        @Param("medicoId") Long medicoId,
+                        @Param("inicio") ZonedDateTime inicio,
+                        @Param("fin") ZonedDateTime fin);
 }

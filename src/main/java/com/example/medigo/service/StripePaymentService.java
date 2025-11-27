@@ -6,6 +6,7 @@ import com.example.medigo.dto.response.CheckoutSessionResponse;
 import com.example.medigo.dto.response.PaymentStatusResponse;
 import com.example.medigo.exceptions.ResourceNotFoundException;
 import com.example.medigo.repository.PaymentTransactionRepository;
+import com.example.medigo.events.CitaCreadaEvent;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.checkout.Session;
@@ -29,6 +30,7 @@ public class StripePaymentService {
 
     private final PaymentTransactionRepository paymentTransactionRepository;
     private final CitaService citaService;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Value("${stripe.api.secret-key}")
     private String stripeSecretKey;
@@ -208,6 +210,15 @@ public class StripePaymentService {
                 citaService.saveCita(cita);
 
                 log.info("Pago procesado exitosamente para cita: {}", cita.getId());
+
+                // Forzar carga de especialidades antes de publicar evento asíncrono
+                cita.getMedico().getEspecialidades().size(); // Force lazy loading
+
+                // Enviar correos de confirmación
+                log.info("🔔 PUBLICANDO CitaCreadaEvent para cita ID: {} - Paciente: {} - Médico: {}",
+                        cita.getId(), cita.getPaciente().getEmail(), cita.getMedico().getEmail());
+                eventPublisher.publishEvent(new CitaCreadaEvent(this, cita));
+                log.info("✅ CitaCreadaEvent publicado exitosamente");
             }
 
         } catch (StripeException e) {
@@ -215,7 +226,7 @@ public class StripePaymentService {
             throw new RuntimeException("Error al procesar pago: " + e.getMessage());
         }
     }
-    
+
     @Transactional
     public void handleExpiredSession(String sessionId) {
         paymentTransactionRepository.findByStripeSessionId(sessionId)
@@ -223,13 +234,6 @@ public class StripePaymentService {
                     if (transaction.getPaymentStatus() == PaymentStatus.PENDING) {
                         transaction.setPaymentStatus(PaymentStatus.EXPIRED);
                         paymentTransactionRepository.save(transaction);
-                        
-                        Cita cita = transaction.getCita();
-                        if (cita != null && !Boolean.TRUE.equals(cita.getEsPagada())) {
-                            citaService.deleteCita(cita.getId());
-                            log.info("Cita {} eliminada por sesión expirada", cita.getId());
-                        }
-                        
                         log.info("Sesión expirada: {}", sessionId);
                     }
                 });

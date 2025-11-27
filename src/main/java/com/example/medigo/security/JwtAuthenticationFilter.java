@@ -29,32 +29,37 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        return path.startsWith("/api/auth/");
+        // Don't filter auth endpoints and WebSocket endpoints
+        return path.startsWith("/api/auth/") ||
+                path.startsWith("/ws/") ||
+                path.startsWith("/api/ws/");
     }
-    
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
         final String authHeader = request.getHeader("Authorization");
         log.debug("Processing request: {} {}", request.getMethod(), request.getRequestURI());
-        
+
         if (StringUtils.hasText(authHeader) && StringUtils.startsWithIgnoreCase(authHeader, "Bearer ")) {
             String token = authHeader.substring(7);
             log.debug("Token extracted from request");
-            
+
             if (jwtService.isTokenValid(token)) {
                 String username = jwtService.extractUsername(token);
                 log.debug("Token is valid for user: {}", username);
-                
+
                 if (StringUtils.hasText(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
                     UserDetails userDetails = userDetailsService.loadUserByUsername(username);
                     log.debug("User details loaded: {} with authorities: {}", username, userDetails.getAuthorities());
 
                     SecurityContext context = SecurityContextHolder.createEmptyContext();
-                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails,
+                            null, userDetails.getAuthorities());
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     context.setAuthentication(authToken);
                     SecurityContextHolder.setContext(context);
-                    
+
                     log.debug("Authentication set in SecurityContext for user: {}", username);
                 } else {
                     log.debug("Either username is empty or authentication already exists in context");
@@ -65,7 +70,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         } else {
             log.debug("No valid Authorization header found");
         }
-        
+
         filterChain.doFilter(request, response);
     }
 }
