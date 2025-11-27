@@ -97,15 +97,15 @@ public class StripePaymentService {
                                                     .setUnitAmount(amountInCents)
                                                     .setProductData(
                                                             SessionCreateParams.LineItem.PriceData.ProductData.builder()
-                                                                    .setName("Consulta Médica - " + cita.getMedico().getNombres() + " " + cita.getMedico().getApellidos())
-                                                                    .setDescription("Consulta médica programada para " + cita.getFechaHora())
-                                                                    .build()
-                                                    )
-                                                    .build()
-                                    )
+                                                                    .setName("Consulta Médica - "
+                                                                            + cita.getMedico().getNombres() + " "
+                                                                            + cita.getMedico().getApellidos())
+                                                                    .setDescription("Consulta médica programada para "
+                                                                            + cita.getFechaHora())
+                                                                    .build())
+                                                    .build())
                                     .setQuantity(1L)
-                                    .build()
-                    )
+                                    .build())
                     .putAllMetadata(metadata)
                     .build();
 
@@ -217,7 +217,7 @@ public class StripePaymentService {
     }
 
     @Transactional
-    protected void handleExpiredSession(String sessionId) {
+    public void handleExpiredSession(String sessionId) {
         paymentTransactionRepository.findByStripeSessionId(sessionId)
                 .ifPresent(transaction -> {
                     if (transaction.getPaymentStatus() == PaymentStatus.PENDING) {

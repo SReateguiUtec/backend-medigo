@@ -38,6 +38,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers("/api/search/**").permitAll()
+                        .requestMatchers("/api/payments/webhook").permitAll()
                         .requestMatchers("/api/profile/**").authenticated()
                         .requestMatchers("/api/citas/**").authenticated()
                         .requestMatchers("/api/historial-medico/**").authenticated()
