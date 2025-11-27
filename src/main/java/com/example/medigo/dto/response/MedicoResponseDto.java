@@ -31,4 +31,5 @@ public class MedicoResponseDto {
     private Set<Especialidad> especialidades;
     private ZonedDateTime createdAt;
     private EstadoCuenta estadoCuenta;
+    private String rutaFoto;
 }

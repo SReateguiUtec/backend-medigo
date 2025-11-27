@@ -242,4 +242,27 @@ public class ProfileService {
         }
         throw new IllegalStateException("Rol de usuario no válido.");
     }
+
+    @Transactional
+    public Object updateProfilePhoto(String email, String photoUrl) {
+        Usuario usuario = obtenerUsuarioPorEmail(email);
+        usuario.setRutaFoto(photoUrl);
+        usuarioRepository.save(usuario);
+
+        if (usuario.getRol() == Rol.PACIENTE) {
+            return modelMapper.map(usuario, PacienteResponseDto.class);
+        } else if (usuario.getRol() == Rol.MEDICO) {
+            return modelMapper.map(usuario, MedicoResponseDto.class);
+        }
+        throw new IllegalStateException("Rol de usuario no válido.");
+    }
+
+    @Transactional
+    public String deleteProfilePhoto(String email) {
+        Usuario usuario = obtenerUsuarioPorEmail(email);
+        String oldPhotoUrl = usuario.getRutaFoto();
+        usuario.setRutaFoto(null);
+        usuarioRepository.save(usuario);
+        return oldPhotoUrl;
+    }
 }

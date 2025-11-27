@@ -26,4 +26,5 @@ public class PacienteResponseDto {
     private LocalDate fechaNacimiento;
     private ZonedDateTime createdAt;
     private EstadoCuenta estadoCuenta;
+    private String rutaFoto;
 }

@@ -31,7 +31,7 @@ public class VideoRoomService {
 
     private final VideoRoomRepository videoRoomRepository;
     private final CitaService citaService;
-    private final WherebyConfig wherebyConfig;  // Changed from DailyConfig to WherebyConfig
+    private final WherebyConfig wherebyConfig;
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -89,13 +89,13 @@ public class VideoRoomService {
             throw new RuntimeException("Error al procesar datos JSON: " + e.getMessage(), e);
         }
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + wherebyConfig.getApiKey());  // Changed from dailyConfig to wherebyConfig
+        headers.set("Authorization", "Bearer " + wherebyConfig.getApiKey());
         headers.set("Content-Type", "application/json");
         HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
 
         try {
             ResponseEntity<String> response = restTemplate.exchange(
-                    wherebyConfig.getApiUrl() + "/meetings",  // Changed from dailyConfig to wherebyConfig
+                    wherebyConfig.getApiUrl() + "/meetings",
                     HttpMethod.POST,
                     entity,
                     String.class
@@ -118,7 +118,6 @@ public class VideoRoomService {
                         .cita(cita)
                         .expiresAt(expirationTime)
                         .status("ACTIVE")
-                        // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for Whereby
                         .recordingEnabled(false)
                         .build();
 
@@ -146,7 +145,6 @@ public class VideoRoomService {
         }
         return room;
     }
-
 
     // Obtener el token de acceso apropiado basado en el rol del usuario
     @Transactional(readOnly = true)
