@@ -37,7 +37,11 @@ public class CitaService {
     public Cita saveCita(Cita cita) {
         return citaRepository.save(cita);
     }
-
+    @Transactional
+    public void deleteCita(Long citaId) {
+        citaRepository.deleteById(citaId);
+    }
+    
     @Transactional
     public Cita createCita(CreateCitaRequestDto request, Long pacienteId) {
         Paciente paciente = pacienteRepository.findById(pacienteId)

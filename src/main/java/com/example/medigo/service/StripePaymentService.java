@@ -215,7 +215,7 @@ public class StripePaymentService {
             throw new RuntimeException("Error al procesar pago: " + e.getMessage());
         }
     }
-
+    
     @Transactional
     public void handleExpiredSession(String sessionId) {
         paymentTransactionRepository.findByStripeSessionId(sessionId)
@@ -223,6 +223,13 @@ public class StripePaymentService {
                     if (transaction.getPaymentStatus() == PaymentStatus.PENDING) {
                         transaction.setPaymentStatus(PaymentStatus.EXPIRED);
                         paymentTransactionRepository.save(transaction);
+                        
+                        Cita cita = transaction.getCita();
+                        if (cita != null && !Boolean.TRUE.equals(cita.getEsPagada())) {
+                            citaService.deleteCita(cita.getId());
+                            log.info("Cita {} eliminada por sesión expirada", cita.getId());
+                        }
+                        
                         log.info("Sesión expirada: {}", sessionId);
                     }
                 });
