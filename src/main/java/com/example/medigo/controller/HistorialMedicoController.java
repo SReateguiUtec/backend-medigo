@@ -44,6 +44,14 @@ public class HistorialMedicoController {
         return ResponseEntity.ok(historialMedicoService.getByPacienteId(pacienteId));
     }
 
+    // Nuevo endpoint para que los pacientes vean su propio historial
+    @GetMapping("/mi-historial")
+    @PreAuthorize("hasRole('PACIENTE')")
+    public ResponseEntity<List<HistorialMedico>> getMiHistorial(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.example.medigo.domain.Usuario usuario) {
+        return ResponseEntity.ok(historialMedicoService.getByPacienteId(usuario.getId()));
+    }
+
     @PostMapping("/cita/{citaId}")
     @PreAuthorize("hasRole('MEDICO')")
     public ResponseEntity<HistorialMedico> create(

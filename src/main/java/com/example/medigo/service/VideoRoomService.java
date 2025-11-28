@@ -31,7 +31,7 @@ public class VideoRoomService {
 
     private final VideoRoomRepository videoRoomRepository;
     private final CitaService citaService;
-    private final WherebyConfig wherebyConfig;
+    private final WherebyConfig wherebyConfig; // Changed from DailyConfig to WherebyConfig
     private final RestTemplate restTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -54,23 +54,27 @@ public class VideoRoomService {
 
         // Obtener la cita, permitir crear sala para citas pendientes o confirmadas
         Cita cita = citaService.findCitaById(citaId);
-        if (cita.getEstado() != EstadoCita.CONFIRMADA && cita.getEstado() != EstadoCita.PENDIENTE) { 
+        if (cita.getEstado() != EstadoCita.CONFIRMADA && cita.getEstado() != EstadoCita.PENDIENTE) {
             throw new IllegalStateException("La cita no está en un estado válido para crear una sala de video");
         }
-        
-        // Verificar que esté dentro del tiempo permitido para crear la sala (solo a la hora de inicio o después)
+
+        // Verificar que esté dentro del tiempo permitido para crear la sala (solo a la
+        // hora de inicio o después)
         ZonedDateTime now = ZonedDateTime.now();
         ZonedDateTime appointmentTime = cita.getFechaHora();
-        ZonedDateTime timeWindowEnd = appointmentTime.plusHours(1); // 1 hora después (duración máxima de la videollamada)
-        
+        ZonedDateTime timeWindowEnd = appointmentTime.plusHours(1); // 1 hora después (duración máxima de la
+                                                                    // videollamada)
+
         if (now.isBefore(appointmentTime)) {
-            throw new IllegalStateException("La sala de video solo puede crearse a partir de la hora programada de inicio de la cita: " + appointmentTime.toString());
+            throw new IllegalStateException(
+                    "La sala de video solo puede crearse a partir de la hora programada de inicio de la cita: "
+                            + appointmentTime.toString());
         }
-        
+
         if (now.isAfter(timeWindowEnd)) {
             throw new IllegalStateException("La sala de video ya no está disponible. La cita programada ha expirado.");
         }
-        
+
         // Generar nombre único para la sala
         String roomName = "medigo-cita-" + citaId + "-" + System.currentTimeMillis();
         // Calcular tiempo de expiración (1 hora después de la cita)
@@ -79,7 +83,15 @@ public class VideoRoomService {
 
         // Preparar request para Whereby API
         Map<String, Object> roomRequest = new HashMap<>();
-        roomRequest.put("endDate", expirationTime.toString());
+        // Usar formato ISO_INSTANT (UTC con 'Z') para máxima compatibilidad con Whereby
+        // API
+        // Ejemplo: "2025-11-28T08:17:00.000Z"
+        String endDateFormatted = expirationTime.toInstant().toString();
+        roomRequest.put("endDate", endDateFormatted);
+
+        log.info("Creating Whereby room with endDate: {} (cita ID: {}, appointment time: {})",
+                endDateFormatted, citaId, cita.getFechaHora());
+        log.info("Expiration time in local timezone: {}", expirationTime);
 
         // Llamar a Whereby API para crear la sala
         String requestBody;
@@ -89,17 +101,17 @@ public class VideoRoomService {
             throw new RuntimeException("Error al procesar datos JSON: " + e.getMessage(), e);
         }
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + wherebyConfig.getApiKey());
+        headers.set("Authorization", "Bearer " + wherebyConfig.getApiKey()); // Changed from dailyConfig to
+                                                                             // wherebyConfig
         headers.set("Content-Type", "application/json");
         HttpEntity<String> entity = new HttpEntity<>(requestBody, headers);
 
         try {
             ResponseEntity<String> response = restTemplate.exchange(
-                    wherebyConfig.getApiUrl() + "/meetings",
+                    wherebyConfig.getApiUrl() + "/meetings", // Changed from dailyConfig to wherebyConfig
                     HttpMethod.POST,
                     entity,
-                    String.class
-            );
+                    String.class);
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                 JsonNode roomData;
@@ -108,16 +120,18 @@ public class VideoRoomService {
                 } catch (Exception e) {
                     throw new RuntimeException("Error al procesar respuesta de Whereby API: " + e.getMessage(), e);
                 }
-                String roomUrl = roomData.get("roomUrl").asText();  // Changed from "url" to "roomUrl"
-                String roomNameFromResponse = roomData.get("roomName").asText();  // Changed from "name" to "roomName"
+                String roomUrl = roomData.get("roomUrl").asText(); // Changed from "url" to "roomUrl"
+                String roomNameFromResponse = roomData.get("roomName").asText(); // Changed from "name" to "roomName"
 
                 // Guardar información de la sala en la base de datos
                 VideoRoom videoRoom = VideoRoom.builder()
-                        .roomName(roomNameFromResponse)  // Use the room name from Whereby response
+                        .roomName(roomNameFromResponse) // Use the room name from Whereby response
                         .roomUrl(roomUrl)
                         .cita(cita)
                         .expiresAt(expirationTime)
                         .status("ACTIVE")
+                        // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for
+                        // Whereby
                         .recordingEnabled(false)
                         .build();
 
@@ -136,8 +150,7 @@ public class VideoRoomService {
     public VideoRoom getVideoRoomByCitaId(Long citaId) {
         VideoRoom room = videoRoomRepository.findByCitaId(citaId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "No se encontró sala de video para la cita ID: " + citaId
-                ));
+                        "No se encontró sala de video para la cita ID: " + citaId));
         if (ZonedDateTime.now().isAfter(room.getExpiresAt())) {
             room.setStatus("EXPIRED");
             videoRoomRepository.save(room);
@@ -180,7 +193,7 @@ public class VideoRoomService {
                 .recordingEnabled(room.getRecordingEnabled())
                 .build();
     }
-    
+
     @Transactional
     public JoinVideoRoomResponseDto createJoinResponseDto(Long citaId, Usuario usuario) {
         // First try to get the existing room
@@ -196,24 +209,28 @@ public class VideoRoomService {
                 return createErrorJoinResponseDto("No se pudo crear la sala de video para la cita ID: " + citaId);
             }
         }
-        
+
         // Verificar que esté dentro del tiempo permitido para unirse a la sala
         Cita cita = room.getCita();
         ZonedDateTime now = ZonedDateTime.now();
         ZonedDateTime appointmentTime = cita.getFechaHora();
-        ZonedDateTime timeWindowEnd = appointmentTime.plusHours(1); // 1 hora después (duración máxima de la videollamada)
-        
+        ZonedDateTime timeWindowEnd = appointmentTime.plusHours(1); // 1 hora después (duración máxima de la
+                                                                    // videollamada)
+
         if (now.isBefore(appointmentTime)) {
-            return createErrorJoinResponseDto("El acceso a la videollamada solo está permitido a partir de la hora programada de inicio de la cita: " + appointmentTime.toString());
+            return createErrorJoinResponseDto(
+                    "El acceso a la videollamada solo está permitido a partir de la hora programada de inicio de la cita: "
+                            + appointmentTime.toString());
         }
-        
+
         if (now.isAfter(timeWindowEnd)) {
-            return createErrorJoinResponseDto("El acceso a la videollamada ya no está disponible. La cita programada ha expirado.");
+            return createErrorJoinResponseDto(
+                    "El acceso a la videollamada ya no está disponible. La cita programada ha expirado.");
         }
-        
+
         // For Whereby, we don't need separate tokens, just the room URL
         boolean isDoctor = usuario.getRol() == Rol.MEDICO;
-        
+
         return JoinVideoRoomResponseDto.builder()
                 .success(true)
                 .roomUrl(room.getRoomUrl())
@@ -223,12 +240,62 @@ public class VideoRoomService {
                 .message("Acceso a sala de video concedido")
                 .build();
     }
-    
+
     @Transactional(readOnly = true)
     public JoinVideoRoomResponseDto createErrorJoinResponseDto(String message) {
         return JoinVideoRoomResponseDto.builder()
                 .success(false)
                 .message(message)
                 .build();
+    }
+
+    /**
+     * Elimina salas de video expiradas de Whereby y marca como DELETED en la base
+     * de datos
+     * Útil para limpiar salas creadas antes del fix de endDate
+     */
+    @Transactional
+    public int deleteExpiredRooms() {
+        // Buscar todas las salas expiradas
+        ZonedDateTime now = ZonedDateTime.now();
+        var expiredRooms = videoRoomRepository.findAll().stream()
+                .filter(room -> room.getExpiresAt().isBefore(now))
+                .filter(room -> !"DELETED".equals(room.getStatus()))
+                .toList();
+
+        int deletedCount = 0;
+
+        for (VideoRoom room : expiredRooms) {
+            try {
+                // Intentar eliminar de Whereby API
+                HttpHeaders headers = new HttpHeaders();
+                headers.set("Authorization", "Bearer " + wherebyConfig.getApiKey());
+                HttpEntity<Void> entity = new HttpEntity<>(headers);
+
+                // El meetingId en Whereby es el roomName
+                String deleteUrl = wherebyConfig.getApiUrl() + "/meetings/" + room.getRoomName();
+
+                restTemplate.exchange(
+                        deleteUrl,
+                        HttpMethod.DELETE,
+                        entity,
+                        String.class);
+
+                log.info("Successfully deleted room from Whereby: {}", room.getRoomName());
+                deletedCount++;
+
+            } catch (Exception e) {
+                // Si falla (ej: sala ya eliminada), solo loguear
+                log.warn("Could not delete room from Whereby (may already be deleted): {} - Error: {}",
+                        room.getRoomName(), e.getMessage());
+            }
+
+            // Marcar como eliminada en la base de datos
+            room.setStatus("DELETED");
+            videoRoomRepository.save(room);
+        }
+
+        log.info("Cleanup completed: {} expired rooms processed", deletedCount);
+        return deletedCount;
     }
 }

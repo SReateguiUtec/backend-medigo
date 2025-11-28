@@ -12,6 +12,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/video")
 @RequiredArgsConstructor
@@ -45,6 +48,20 @@ public class VideoController {
             @PathVariable Long citaId,
             @AuthenticationPrincipal Usuario usuario) {
         VideoRoomResponseDto response = videoRoomService.createVideoRoomResponseDto(citaId);
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Endpoint para limpiar salas de video expiradas
+     * Solo accesible por administradores o para testing
+     */
+    @DeleteMapping("/rooms/cleanup-expired")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> cleanupExpiredRooms() {
+        int deletedCount = videoRoomService.deleteExpiredRooms();
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Cleanup completed successfully");
+        response.put("deletedRooms", deletedCount);
         return ResponseEntity.ok(response);
     }
 }

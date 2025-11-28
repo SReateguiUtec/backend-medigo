@@ -36,6 +36,16 @@ public class HorarioMedicoService {
         Medico medico = medicoRepository.findById(medicoId)
                 .orElseThrow(() -> new ResourceNotFoundException("Médico no encontrado"));
 
+        // Verificar si ya existe un horario para ese día
+        List<HorarioMedico> horariosExistentes = horarioMedicoRepository
+                .findByMedicoIdAndDiaSemanaAndActivoTrue(medicoId, request.getDiaSemana());
+
+        if (!horariosExistentes.isEmpty()) {
+            throw new IllegalStateException(
+                    "Ya existe un horario configurado para " + request.getDiaSemana().getNombre() +
+                            ". Por favor, elimina el horario existente antes de crear uno nuevo.");
+        }
+
         HorarioMedico horario = HorarioMedico.builder()
                 .medico(medico)
                 .diaSemana(request.getDiaSemana())
@@ -95,9 +105,11 @@ public class HorarioMedicoService {
                 // Use ZonedDateTime instead of LocalDateTime
                 ZonedDateTime slotDateTime = fecha.atTime(horaActual).atZone(ZoneId.systemDefault());
 
-                // Verificar si el slot está ocupado (compare only date and time, ignoring nanoseconds)
+                // Verificar si el slot está ocupado (compare only date and time, ignoring
+                // nanoseconds)
                 boolean ocupado = citasAgendadas.stream()
-                        .anyMatch(cita -> cita.getFechaHora().toInstant().getEpochSecond() == slotDateTime.toInstant().getEpochSecond());
+                        .anyMatch(cita -> cita.getFechaHora().toInstant().getEpochSecond() == slotDateTime.toInstant()
+                                .getEpochSecond());
 
                 slots.add(SlotDisponibleResponse.builder()
                         .fechaHora(slotDateTime)
