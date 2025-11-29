@@ -45,6 +45,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/historial-medico/**").authenticated()
                         .requestMatchers("/api/payment/**").authenticated()
                         .requestMatchers("/api/video/**").authenticated()
+                        .requestMatchers("/api/ai/**").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session

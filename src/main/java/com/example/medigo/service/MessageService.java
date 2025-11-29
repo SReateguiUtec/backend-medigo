@@ -79,6 +79,8 @@ public class MessageService {
                 .content(message.getContent())
                 .isRead(message.getIsRead())
                 .createdAt(message.getCreatedAt())
+                .senderProfilePicture(message.getSender().getRutaFoto())
+                .receiverProfilePicture(message.getReceiver().getRutaFoto())
                 .build();
     }
 
@@ -97,6 +99,7 @@ public class MessageService {
                 .lastMessage(lastMessage != null ? lastMessage.getContent() : null)
                 .lastMessageTime(lastMessage != null ? lastMessage.getCreatedAt() : null)
                 .unreadCount(unreadCount)
+                .profilePicture(partner.getRutaFoto())
                 .build();
     }
 }

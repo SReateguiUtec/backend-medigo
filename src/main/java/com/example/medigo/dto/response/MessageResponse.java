@@ -14,4 +14,6 @@ public class MessageResponse {
     private String content;
     private Boolean isRead;
     private ZonedDateTime createdAt;
+    private String senderProfilePicture;
+    private String receiverProfilePicture;
 }

@@ -40,8 +40,7 @@ public class SearchService {
         log.info("Buscando médicos por nombre/apellido: query='{}', page={}, size={}",
                 query, pageable.getPageNumber(), pageable.getPageSize());
 
-        Page<Medico> medicos = medicoRepository.findByNombresContainingIgnoreCaseOrApellidosContainingIgnoreCase(
-                query, query, pageable);
+        Page<Medico> medicos = medicoRepository.findByNombreCompleto(query, pageable);
         return medicos.map(medico -> {
             MedicoSearchResponseDto dto = modelMapper.map(medico, MedicoSearchResponseDto.class);
             dto.setNumeroColegiado(medico.getNumeroColegiado());
