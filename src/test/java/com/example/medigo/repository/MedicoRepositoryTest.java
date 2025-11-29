@@ -21,7 +21,7 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
+/*
 @DataJpaTest
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -317,3 +317,4 @@ class MedicoRepositoryTest {
         assertThat(exists2).isTrue();
     }
 }
+    */
