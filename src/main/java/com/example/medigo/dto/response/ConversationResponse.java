@@ -12,4 +12,5 @@ public class ConversationResponse {
     private String lastMessage;
     private ZonedDateTime lastMessageTime;
     private Long unreadCount;
+    private String profilePicture;
 }

@@ -18,8 +18,9 @@ public interface MedicoRepository extends JpaRepository<Medico, Long> {
     Boolean existsByNumeroColegiado(String numeroColegiado);
 
     // Búsqueda por nombre o apellido (parcial, ignora mayúsculas/minúsculas)
-    Page<Medico> findByNombresContainingIgnoreCaseOrApellidosContainingIgnoreCase(
-            String nombres, String apellidos, Pageable pageable);
+    // Búsqueda por nombre o apellido (parcial, ignora mayúsculas/minúsculas, soporta nombre completo)
+    @Query("SELECT m FROM Medico m WHERE LOWER(CONCAT(m.nombres, ' ', m.apellidos)) LIKE LOWER(CONCAT('%', :query, '%'))")
+    Page<Medico> findByNombreCompleto(String query, Pageable pageable);
 
     // Búsqueda exacta por email
     Optional<Medico> findByEmail(String email);

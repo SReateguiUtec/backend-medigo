@@ -45,6 +45,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/historial-medico/**").authenticated()
                         .requestMatchers("/api/payment/**").authenticated()
                         .requestMatchers("/api/video/**").authenticated()
+                        .requestMatchers("/api/ai/**").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/actuator/health").permitAll()
                         .anyRequest().authenticated())
@@ -58,8 +59,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        //configuration.setAllowedOrigins(Arrays.asList("http://localhost:5001", "http://localhost:5000")); // Puertos del front end
-        configuration.setAllowedOrigins(Arrays.asList("*")); // Solo para el deploy                                                                
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5001", "http://localhost:5000")); // Puertos del front end
+        // configuration.setAllowedOrigins(Arrays.asList("*")); // Solo para el deploy                                                                
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
