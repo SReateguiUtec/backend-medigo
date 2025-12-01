@@ -46,6 +46,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/payment/**").authenticated()
                         .requestMatchers("/api/video/**").authenticated()
                         .requestMatchers("/api/ai/**").authenticated()
+                        .requestMatchers("/api/imagenes-medicas/**").authenticated()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .requestMatchers("/actuator/health").permitAll()
                         .anyRequest().authenticated())

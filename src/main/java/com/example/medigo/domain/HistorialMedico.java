@@ -3,6 +3,10 @@ package com.example.medigo.domain;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "Historial_Medico")
@@ -32,6 +36,11 @@ public class HistorialMedico {
 
     @Column(nullable = false)
     private ZonedDateTime createdAt;
+
+    @OneToMany(mappedBy = "historialMedico", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @JsonIgnore
+    private List<ImagenMedica> imagenes = new ArrayList<>();
 
     @PrePersist
     protected void onCreate() {

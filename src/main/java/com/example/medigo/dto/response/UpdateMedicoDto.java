@@ -39,6 +39,6 @@ public class UpdateMedicoDto {
     @Size(min = 1, max = 20, message = "Número de colegiado debe tener entre 1 y 20 caracteres")
     private String numeroColegiado;
     
-    @Size(max = 500, message = "Bio no puede exceder 500 caracteres")
+    @Size(max = 1000, message = "Bio no puede exceder 1000 caracteres")
     private String bio;
 }
