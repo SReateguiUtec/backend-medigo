@@ -179,9 +179,17 @@ MAIL_SMPT_PASSWORD=your-app-password
 STRIPE_API_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
 
-# Daily.co
+# Whereby
 WHEREBY_API_KEY=your-whereby-api-key
 whereby.api.url=https://api.whereby.dev/v1
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+
+# Gemini
+GEMINI_API_KEY=your-api-key
 ```
 
 3. **Compilar y ejecutar**
@@ -195,27 +203,50 @@ La aplicación estará disponible en `http://localhost:8080`
 ## 📁 Estructura del Proyecto
 
 ```
-src/
-├── main/
-│   ├── java/com/example/medigo/
-│   │   ├── auth/                    # Autenticación
-│   │   ├── config/                  # Configuraciones
-│   │   ├── controller/              # Controladores REST
-│   │   ├── domain/                  # Entidades del dominio
-│   │   ├── dto/                     # Data Transfer Objects
-│   │   │   ├── request/            # DTOs de entrada
-│   │   │   └── response/           # DTOs de salida
-│   │   ├── email/                   # Servicio de emails
-│   │   ├── events/                  # Eventos de la aplicación
-│   │   ├── exceptions/              # Excepciones personalizadas
-│   │   ├── repository/              # Repositorios JPA
-│   │   ├── security/                # Configuración de seguridad
-│   │   └── service/                 # Servicios de negocio
-│   └── resources/
-│       ├── application.properties   # Configuración de la app
-│       ├── static/                  # Archivos estáticos
-│       └── templates/               # Plantillas Thymeleaf
-└── test/                            # Pruebas unitarias
+.
+├── src/
+│   ├── main/
+│   │   ├── java/com/example/medigo/
+│   │   │   ├── auth/                    # Autenticación
+│   │   │   ├── config/                  # Configuraciones
+│   │   │   ├── controller/              # Controladores REST
+│   │   │   ├── domain/                  # Entidades del dominio
+│   │   │   ├── dto/
+│   │   │   │   ├── request/            # DTOs de entrada
+│   │   │   │   └── response/           # DTOs de salida
+│   │   │   │   ├── AIConsultaRequest.java
+│   │   │   │   └── AIConsultaResponse.java
+│   │   │   ├── email/                   # Servicio de emails
+│   │   │   ├── events/
+│   │   │   │   ├── EventListener/
+│   │   │   │   ├── Scheduler/
+│   │   │   │   ├── CitaCreadaEvent.java
+│   │   │   │   └── SignUpEvent.java
+│   │   │   ├── exceptions/              # Excepciones personalizadas
+│   │   │   ├── repository/              # Repositorios JPA
+│   │   │   ├── security/                # Configuración de seguridad
+│   │   │   ├── service/                 # Servicios de negocio
+│   │   │   └── MediGoApplication.java
+│   │   └── resources/
+│   │       ├── templates/
+│   │       │   ├── cita-agendada-medico.html
+│   │       │   ├── cita-agendada-paciente.html
+│   │       │   └── welcome.html
+│   │       └── application.properties
+│   └── test/java/com/example/medigo/
+│       ├── controller/
+│       ├── repository/
+│       ├── service/
+│       └── MediGoApplicationTests.java
+├── .env.example
+├── .gitattributes
+├── .gitignore
+├── Dockerfile
+├── README.md
+├── mvnw
+├── mvnw.cmd
+├── pom.xml
+└── postman_collection.json
 ```
 
 ## 👥 Equipo de Desarrollo
@@ -224,8 +255,6 @@ src/
 |--------|--------|
 |   Sebastian Hernan Reategui Bellido     |   202410048     |
 |   Juan Diego Mejia Armas     |    202410271    |
-|   Samir Antony Mena Ramirez   | 202310289       |
-|   Gabriel Raymi Vaccaro Ortiz   | 202210358      |
 
 
 ## 📄 Licencia
