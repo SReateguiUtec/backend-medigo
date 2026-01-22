@@ -7,11 +7,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -20,23 +15,9 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Testcontainers
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @DisplayName("Tests del Repositorio de VideoRoom")
 class VideoRoomRepositoryTest {
-
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
-            .withDatabaseName("testdb")
-            .withUsername("test")
-            .withPassword("test");
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
 
     @Autowired
     private VideoRoomRepository videoRoomRepository;
@@ -110,7 +91,8 @@ class VideoRoomRepositoryTest {
                 .createdAt(ZonedDateTime.now())
                 .expiresAt(ZonedDateTime.now().plusDays(1))
                 .status("ACTIVE")
-                // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for Whereby
+                // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for
+                // Whereby
                 .recordingEnabled(true)
                 .build();
     }
@@ -246,7 +228,8 @@ class VideoRoomRepositoryTest {
                 .createdAt(ZonedDateTime.now())
                 .expiresAt(ZonedDateTime.now().plusDays(1))
                 .status("ACTIVE")
-                // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for Whereby
+                // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for
+                // Whereby
                 .recordingEnabled(true)
                 .build();
         videoRoomRepository.save(videoRoom2);

@@ -21,25 +21,11 @@ import java.time.ZonedDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-/*
+
 @DataJpaTest
-@Testcontainers
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @DisplayName("Tests del Repositorio de Medico")
 class MedicoRepositoryTest {
-
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine")
-            .withDatabaseName("testdb")
-            .withUsername("test")
-            .withPassword("test");
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
 
     @Autowired
     private MedicoRepository medicoRepository;
@@ -132,8 +118,7 @@ class MedicoRepositoryTest {
 
         // When
         Pageable pageable = PageRequest.of(0, 10);
-        Page<Medico> medicos = medicoRepository.findByNombresContainingIgnoreCaseOrApellidosContainingIgnoreCase(
-                "carlos", "garcia", pageable);
+        Page<Medico> medicos = medicoRepository.findByNombreCompleto("carlos", pageable);
 
         // Then
         assertThat(medicos.getContent()).hasSize(1);
@@ -317,4 +302,3 @@ class MedicoRepositoryTest {
         assertThat(exists2).isTrue();
     }
 }
-    */

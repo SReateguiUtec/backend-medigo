@@ -32,7 +32,7 @@ class VideoRoomServiceTest {
     private CitaService citaService;
 
     @Mock
-    private WherebyConfig wherebyConfig;  // Changed from DailyConfig to WherebyConfig
+    private WherebyConfig wherebyConfig; // Changed from DailyConfig to WherebyConfig
 
     @Mock
     private RestTemplate restTemplate;
@@ -84,7 +84,8 @@ class VideoRoomServiceTest {
                 .cita(testCita)
                 .expiresAt(ZonedDateTime.now().plusHours(24))
                 .status("ACTIVE")
-                // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for Whereby
+                // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for
+                // Whereby
                 .recordingEnabled(false)
                 .build();
 
@@ -107,24 +108,25 @@ class VideoRoomServiceTest {
     void shouldCreateVideoRoomForCitaWhenNoExistingRoomAndCitaExists() {
         // Given
         String wherebyApiResponse = "{\"roomName\":\"medigo-cita-1-1234567890\",\"roomUrl\":\"https://test.whereby.com/medigo-cita-1-1234567890\"}";
-        
-        // Create a cita with CONFIRMADA state for the validation
+
+        // Create a cita with CONFIRMADA state and time that has already started (to
+        // pass timing validation)
         Cita confirmedCita = new Cita();
         confirmedCita.setId(1L);
         confirmedCita.setPaciente(testPaciente);
         confirmedCita.setMedico(testMedico);
-        confirmedCita.setFechaHora(ZonedDateTime.now().plusHours(1));
+        confirmedCita.setFechaHora(ZonedDateTime.now().minusMinutes(10)); // Started 10 minutes ago
         confirmedCita.setEstado(EstadoCita.CONFIRMADA); // This will pass the validation
         confirmedCita.setEsPagada(true);
-        
+
         when(videoRoomRepository.findByCitaId(1L)).thenReturn(Optional.empty());
         when(citaService.findCitaById(1L)).thenReturn(confirmedCita); // Return the confirmedCita
         when(restTemplate.exchange(
-                anyString(), 
-                eq(HttpMethod.POST), 
-                any(), 
+                anyString(),
+                eq(HttpMethod.POST),
+                any(),
                 eq(String.class)))
-        .thenReturn(new ResponseEntity<>(wherebyApiResponse, HttpStatus.OK));
+                .thenReturn(new ResponseEntity<>(wherebyApiResponse, HttpStatus.OK));
         when(videoRoomRepository.save(any(VideoRoom.class))).thenReturn(testVideoRoom);
 
         // When
@@ -170,10 +172,11 @@ class VideoRoomServiceTest {
                 .cita(testCita)
                 .expiresAt(ZonedDateTime.now().minusHours(1)) // Expired
                 .status("ACTIVE")
-                // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for Whereby
+                // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for
+                // Whereby
                 .recordingEnabled(false)
                 .build();
-                
+
         when(videoRoomRepository.findByCitaId(1L)).thenReturn(Optional.of(expiredRoom));
         when(videoRoomRepository.save(expiredRoom)).thenAnswer(invocation -> {
             VideoRoom room = invocation.getArgument(0);
@@ -185,8 +188,9 @@ class VideoRoomServiceTest {
         assertThrows(IllegalStateException.class, () -> {
             videoRoomService.createVideoRoomForCita(1L);
         });
-        
-        // The method throws an exception before reaching the repository calls for the new room creation
+
+        // The method throws an exception before reaching the repository calls for the
+        // new room creation
         // So we only verify the calls that were actually made
         verify(videoRoomRepository, times(1)).findByCitaId(1L);
         verify(videoRoomRepository, times(1)).save(expiredRoom);
@@ -202,7 +206,7 @@ class VideoRoomServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> {
             videoRoomService.getVideoRoomByCitaId(999L);
         });
-        
+
         verify(videoRoomRepository, times(1)).findByCitaId(999L);
     }
 
@@ -232,10 +236,11 @@ class VideoRoomServiceTest {
                 .cita(testCita)
                 .expiresAt(ZonedDateTime.now().minusHours(1)) // Expired
                 .status("ACTIVE")
-                // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for Whereby
+                // Removed dailyRoomId, patientToken, and doctorToken as they're not needed for
+                // Whereby
                 .recordingEnabled(false)
                 .build();
-                
+
         when(videoRoomRepository.findByCitaId(1L)).thenReturn(Optional.of(expiredRoom));
         when(videoRoomRepository.save(expiredRoom)).thenAnswer(invocation -> {
             VideoRoom room = invocation.getArgument(0);
@@ -247,7 +252,7 @@ class VideoRoomServiceTest {
         assertThrows(IllegalStateException.class, () -> {
             videoRoomService.getVideoRoomByCitaId(1L);
         });
-        
+
         verify(videoRoomRepository, times(1)).findByCitaId(1L);
         verify(videoRoomRepository, times(1)).save(expiredRoom);
     }
@@ -295,7 +300,7 @@ class VideoRoomServiceTest {
         assertThrows(InvalidCredentialsException.class, () -> {
             videoRoomService.getAccessToken(1L, unauthorizedUser);
         });
-        
+
         verify(videoRoomRepository, times(1)).findByCitaId(1L);
     }
 
@@ -321,6 +326,10 @@ class VideoRoomServiceTest {
     void shouldCreateJoinResponseDtoForPacienteWhenVideoRoomExists() {
         // Given
         testUsuarioPaciente.setId(1L); // Same as paciente in cita
+
+        // Update the cita's fechaHora to be in the past (within the 1-hour window)
+        testCita.setFechaHora(ZonedDateTime.now().minusMinutes(10));
+
         when(videoRoomRepository.findByCitaId(1L)).thenReturn(Optional.of(testVideoRoom));
 
         // When
@@ -340,6 +349,10 @@ class VideoRoomServiceTest {
     void shouldCreateJoinResponseDtoForMedicoWhenVideoRoomExists() {
         // Given
         testUsuarioMedico.setId(2L); // Same as medico in cita
+
+        // Update the cita's fechaHora to be in the past (within the 1-hour window)
+        testCita.setFechaHora(ZonedDateTime.now().minusMinutes(10));
+
         when(videoRoomRepository.findByCitaId(1L)).thenReturn(Optional.of(testVideoRoom));
 
         // When

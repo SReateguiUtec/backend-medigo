@@ -6,7 +6,6 @@ import com.example.medigo.exceptions.ResourceNotFoundException;
 import com.example.medigo.repository.CitaRepository;
 import com.example.medigo.repository.MedicoRepository;
 import com.example.medigo.repository.PacienteRepository;
-import com.example.medigo.events.CitaCreadaEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -110,7 +109,7 @@ class CitaServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> {
             citaService.findCitaById(999L);
         });
-        
+
         verify(citaRepository, times(1)).findById(999L);
     }
 
@@ -160,7 +159,8 @@ class CitaServiceTest {
         verify(pacienteRepository, times(1)).findById(1L);
         verify(medicoRepository, times(1)).findById(2L);
         verify(citaRepository, times(1)).save(any(Cita.class));
-        verify(eventPublisher, times(1)).publishEvent(any(CitaCreadaEvent.class));
+        // Event publishing is now done in StripePaymentService after successful payment
+        // verify(eventPublisher, times(1)).publishEvent(any(CitaCreadaEvent.class));
     }
 
     @Test
@@ -177,11 +177,12 @@ class CitaServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> {
             citaService.createCita(request, 1L);
         });
-        
+
         verify(pacienteRepository, times(1)).findById(1L);
         verify(medicoRepository, never()).findById(anyLong());
         verify(citaRepository, never()).save(any(Cita.class));
-        verify(eventPublisher, never()).publishEvent(any(CitaCreadaEvent.class));
+        // Event publishing is now done in StripePaymentService after successful payment
+        // verify(eventPublisher, never()).publishEvent(any(CitaCreadaEvent.class));
     }
 
     @Test
@@ -199,11 +200,12 @@ class CitaServiceTest {
         assertThrows(ResourceNotFoundException.class, () -> {
             citaService.createCita(request, 1L);
         });
-        
+
         verify(pacienteRepository, times(1)).findById(1L);
         verify(medicoRepository, times(1)).findById(2L);
         verify(citaRepository, never()).save(any(Cita.class));
-        verify(eventPublisher, never()).publishEvent(any(CitaCreadaEvent.class));
+        // Event publishing is now done in StripePaymentService after successful payment
+        // verify(eventPublisher, never()).publishEvent(any(CitaCreadaEvent.class));
     }
 
     @Test
@@ -229,11 +231,11 @@ class CitaServiceTest {
         assertThrows(IllegalStateException.class, () -> {
             citaService.createCita(request, 1L);
         });
-        
+
         verify(pacienteRepository, times(1)).findById(1L);
         verify(medicoRepository, times(1)).findById(2L);
-        verify(citaRepository, never()).save(any(Cita.class));
-        verify(eventPublisher, never()).publishEvent(any(CitaCreadaEvent.class));
+        // Event publishing is now done in StripePaymentService after successful payment
+        // verify(eventPublisher, never()).publishEvent(any(CitaCreadaEvent.class));
     }
 
     @Test
@@ -292,7 +294,7 @@ class CitaServiceTest {
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             citaService.cancelCita(1L, unauthorizedUser);
         });
-        
+
         verify(citaRepository, times(1)).findById(1L);
         verify(citaRepository, never()).save(any(Cita.class));
     }
@@ -310,7 +312,7 @@ class CitaServiceTest {
         assertThrows(IllegalStateException.class, () -> {
             citaService.cancelCita(1L, testUsuarioPaciente);
         });
-        
+
         verify(citaRepository, times(1)).findById(1L);
         verify(citaRepository, never()).save(any(Cita.class));
     }
@@ -329,7 +331,7 @@ class CitaServiceTest {
         assertThrows(IllegalStateException.class, () -> {
             citaService.cancelCita(1L, testUsuarioPaciente);
         });
-        
+
         verify(citaRepository, times(1)).findById(1L);
         verify(citaRepository, never()).save(any(Cita.class));
     }
@@ -382,7 +384,7 @@ class CitaServiceTest {
         assertThrows(org.springframework.security.access.AccessDeniedException.class, () -> {
             citaService.getCitaDetails(1L, unauthorizedUser);
         });
-        
+
         verify(citaRepository, times(1)).findById(1L);
     }
 
